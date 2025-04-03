@@ -1,7 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception;
 
 import com.chanwoopark.service.unifiedbiztool.common.model.dto.ErrorResponse;
-import com.chanwoopark.service.unifiedbiztool.common.model.dto.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,7 @@ public class MetaExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        "파일이 비어있거나 정상적이지 않습니다.",
+                        String.format("파일이 비어있거나 정상적이지 않습니다. (%s)", ex.getMessage()),
                         httpServletRequest.getRequestURI()
                 )
         );
