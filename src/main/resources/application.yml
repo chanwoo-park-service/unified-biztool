@@ -1,1 +1,20 @@
-spring.application.name=unified-biztool
+server:
+  port: 8080
+spring:
+  application:
+    name: unified-biztool
+    meta:
+      ads:
+        key: ${META_ADS_KEY}
+  datasource:
+    url: jdbc:mysql://${DB_HOST}/unified-biztool?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
