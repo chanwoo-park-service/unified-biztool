@@ -3,9 +3,6 @@ server:
 spring:
   application:
     name: unified-biztool
-    meta:
-      ads:
-        key: ${META_ADS_KEY}
   datasource:
     url: jdbc:mysql://${DB_HOST}/unified-biztool?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${DB_USER}
@@ -18,3 +15,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
+app:
+  meta:
+    ads:
+      access-token: ${META_ACCESS_TOKEN}
