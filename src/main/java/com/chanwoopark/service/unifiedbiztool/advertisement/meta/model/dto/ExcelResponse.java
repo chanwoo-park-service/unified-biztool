@@ -12,10 +12,10 @@ public record ExcelResponse(
         List<String> advertiseAccountIdList,
         String campaignName,
         List<String> campaignIdList,
-        String budget,
+        Long budget,
         String setName,
         List<String> setIdList,
-        String creativeName,
+        String advertisementName,
         String shortUrl,
         String displayUrl,
         String uploadPage,
@@ -23,7 +23,10 @@ public record ExcelResponse(
         String code,
         String shortUrlFlag,
         String landingUrl,
-        String cafe24Url
+        String cafe24Url,
+        boolean accountResolved,
+        boolean campaignResolved,
+        boolean setResolved
 ) {
 
     public String getMetaCampaignType() {
@@ -40,7 +43,7 @@ public record ExcelResponse(
                 .budget(excelRowDto.getBudget())
                 .setName(excelRowDto.getSetName())
                 .setIdList(excelRowDto.getSetIdList())
-                .creativeName(excelRowDto.getCreativeName())
+                .advertisementName(excelRowDto.getAdvertisementName())
                 .shortUrl(excelRowDto.getShortUrl())
                 .displayUrl(excelRowDto.getDisplayUrl())
                 .uploadPage(excelRowDto.getUploadPage())
@@ -49,6 +52,9 @@ public record ExcelResponse(
                 .shortUrlFlag(excelRowDto.getShortUrlFlag())
                 .landingUrl(excelRowDto.getLandingUrl())
                 .cafe24Url(excelRowDto.getCafe24Url())
+                .accountResolved(excelRowDto.isAccountResolved())
+                .campaignResolved(excelRowDto.isCampaignResolved())
+                .setResolved(excelRowDto.isSetResolved())
                 .build();
     }
 
