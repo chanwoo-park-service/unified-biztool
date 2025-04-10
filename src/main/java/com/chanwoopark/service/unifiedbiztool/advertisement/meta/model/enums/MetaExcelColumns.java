@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 public enum MetaExcelColumns {
     CAMPAIGN_TYPE("캠페인 형태"),
+    ADVERTISE_NAME("광고계정명"),
     CAMPAIGN_NAME("캠페인명 [제품명] 캠페인유형 캠페인 (A) - 날짜"),
     BUDGET("예산"),
     SET_NAME("세트명  A-B. 소구/(타겟) - 날짜"),
