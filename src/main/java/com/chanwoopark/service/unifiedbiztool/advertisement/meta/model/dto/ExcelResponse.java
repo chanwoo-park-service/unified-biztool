@@ -8,14 +8,14 @@ import java.util.List;
 @Builder
 public record ExcelResponse(
         MetaCampaignType metaCampaignType,
-        String advertiseAccountName,
-        List<String> advertiseAccountIdList,
+        String adAccountName,
+        List<String> adAccountIdList,
         String campaignName,
         List<String> campaignIdList,
         Long budget,
         String setName,
         List<String> setIdList,
-        String advertisementName,
+        String adName,
         String shortUrl,
         String displayUrl,
         String uploadPage,
@@ -36,14 +36,14 @@ public record ExcelResponse(
     public static ExcelResponse of(ExcelRowDto excelRowDto) {
         return ExcelResponse.builder()
                 .metaCampaignType(excelRowDto.getMetaCampaignType())
-                .advertiseAccountName(excelRowDto.getAdvertiseAccountName())
-                .advertiseAccountIdList(excelRowDto.getAdvertiseAccountIdList())
+                .adAccountName(excelRowDto.getAdAccountName())
+                .adAccountIdList(excelRowDto.getAdAccountIdList())
                 .campaignName(excelRowDto.getCampaignName())
                 .campaignIdList(excelRowDto.getCampaignIdList())
                 .budget(excelRowDto.getBudget())
                 .setName(excelRowDto.getSetName())
                 .setIdList(excelRowDto.getSetIdList())
-                .advertisementName(excelRowDto.getAdvertisementName())
+                .adName(excelRowDto.getAdName())
                 .shortUrl(excelRowDto.getShortUrl())
                 .displayUrl(excelRowDto.getDisplayUrl())
                 .uploadPage(excelRowDto.getUploadPage())

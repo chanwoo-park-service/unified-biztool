@@ -15,9 +15,9 @@ import java.util.List;
 @Getter
 public class ExcelRowDto {
     private MetaCampaignType metaCampaignType;
-    private String advertiseAccountName;
+    private String adAccountName;
     @Setter
-    private List<String> advertiseAccountIdList;
+    private List<String> adAccountIdList;
     private String campaignName;
     @Setter
     private List<String> campaignIdList;
@@ -27,7 +27,7 @@ public class ExcelRowDto {
     private String setName;
     @Setter
     private List<String> setIdList;
-    private String advertisementName;
+    private String adName;
     private String shortUrl;
     private String displayUrl;
     private String uploadPage;
@@ -47,11 +47,11 @@ public class ExcelRowDto {
     public static ExcelRowDto of(Row row) {
         return ExcelRowDto.builder()
                 .metaCampaignType(parseCampaignType(row.getCell(0)))
-                .advertiseAccountName(getString(row.getCell(1)))
+                .adAccountName(getString(row.getCell(1)))
                 .campaignName(getString(row.getCell(2)))
                 .budget(getLong(row.getCell(3)))
                 .setName(getString(row.getCell(4)))
-                .advertisementName(getString(row.getCell(5)))
+                .adName(getString(row.getCell(5)))
                 .shortUrl(getString(row.getCell(6)))
                 .displayUrl(getString(row.getCell(7)))
                 .uploadPage(getString(row.getCell(8)))
@@ -68,7 +68,7 @@ public class ExcelRowDto {
     }
 
     public String getFirstAccountId() {
-        return advertiseAccountIdList != null && !advertiseAccountIdList.isEmpty() ? advertiseAccountIdList.get(0) : null;
+        return adAccountIdList != null && !adAccountIdList.isEmpty() ? adAccountIdList.get(0) : null;
     }
 
     private static String getString(Cell cell) {
