@@ -1,5 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +15,7 @@ public enum MetaCampaignType {
 
     private final String description;
 
+    @JsonCreator
     public static MetaCampaignType from(String value) {
         if (value == null || value.isBlank()) return DEFAULT;
 
