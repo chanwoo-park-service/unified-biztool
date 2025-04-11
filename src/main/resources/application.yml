@@ -1,6 +1,13 @@
 server:
   port: 8080
 spring:
+  messages:
+    basename: ValidationMessages
+    encoding: UTF-8
+  servlet:
+    multipart:
+      max-file-size: 2GB
+      max-request-size: 2GB
   application:
     name: unified-biztool
   datasource:

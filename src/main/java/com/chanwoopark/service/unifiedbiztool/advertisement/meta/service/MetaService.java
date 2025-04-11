@@ -1,13 +1,11 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.service;
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.InvalidExcelFormatException;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.ExcelResponse;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.ExcelRowDto;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.MetaIdResponse;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.MetaId;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
 import com.chanwoopark.service.unifiedbiztool.common.http.HttpClientHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -32,6 +33,13 @@ import java.util.stream.IntStream;
 public class MetaService {
 
     private final HttpClientHelper httpClientHelper;
+
+    private final MessageSource messageSource;
+
+    private final MetaVideoService metaVideoService;
+
+    private final ObjectMapper objectMapper;
+
 
     @Value("${app.meta.ads.access-token}")
     private String accessToken;
@@ -98,7 +106,7 @@ public class MetaService {
             Row headerRow = sheet.getRow(2);
 
             if (headerRow == null) {
-                throw new InvalidExcelFormatException("엑셀 파일에 헤더가 존재하지 않습니다.");
+                throw new InvalidExcelFormatException("excel.error.header.missing");
             }
 
             OptionalInt invalidIndex = IntStream.range(0, expectedHeaders.size())
@@ -110,11 +118,8 @@ public class MetaService {
 
             if (invalidIndex.isPresent()) {
                 int idx = invalidIndex.getAsInt();
-                throw new InvalidExcelFormatException(
-                        String.format("%d번째 열은 '%s' 이어야 합니다.", idx + 1, expectedHeaders.get(idx))
-                );
+                throw new InvalidExcelFormatException("excel.error.header.invalid", idx + 1, expectedHeaders.get(idx));
             }
-
         }
     }
 
@@ -125,8 +130,8 @@ public class MetaService {
                         + accessToken
                         + "&fields=name,id"
         );
-        excelRowDto.setAdvertiseAccountIdList(parseIdList(accountIdResponse, excelRowDto.getAdvertiseAccountName()));
-        if (excelRowDto.getAdvertiseAccountIdList() == null || excelRowDto.getAdvertiseAccountIdList().size() != 1) {
+        excelRowDto.setAdAccountIdList(parseIdList(accountIdResponse, excelRowDto.getAdAccountName()));
+        if (excelRowDto.getAdAccountIdList() == null || excelRowDto.getAdAccountIdList().size() != 1) {
             return ExcelResponse.of(excelRowDto);
         }
         String accountId = excelRowDto.getFirstAccountId();
@@ -182,11 +187,10 @@ public class MetaService {
     }
 
     private String getIdFromJson(String json) throws JsonProcessingException {
-        return new ObjectMapper().readTree(json).get("id").asText();
+        return objectMapper.readTree(json).get("id").asText();
     }
 
     private List<String> parseIdList(String json, String targetName) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
         MetaIdResponse response = objectMapper.readValue(json, MetaIdResponse.class);
 
         return response.getData().stream()
@@ -212,4 +216,96 @@ public class MetaService {
     }
 
 
+    public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files) {
+        List<CompletableFuture<UploadResult>> futureResults = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String contentType = file.getContentType();
+            if (Objects.requireNonNull(contentType).startsWith("image/")) {
+                futureResults.add(uploadImage(adRequest.getAdAccountId(), file));
+            } else if (contentType.startsWith("video/")) {
+                futureResults.add(metaVideoService.uploadVideo(adRequest.getAdAccountId(), file));
+            }
+        }
+        List<UploadResult> uploadResults = futureResults.stream()
+                .map(CompletableFuture::join)
+                .toList();
+        return AdResponse.builder()
+                .uploadResults(uploadResults)
+                .build();
+    }
+
+    @Async
+    public CompletableFuture<UploadResult> uploadImage(String adAccountId, MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        try {
+            byte[] fileBytes = file.getBytes();
+            String encoded = Base64.getEncoder().encodeToString(fileBytes);
+            String response = httpClientHelper.postForm(META_URL
+                            + "/v22.0/"
+                            + adAccountId
+                            + "/adimages",
+                    form -> form
+                            .with("access_token", accessToken)
+                            .with("bytes", encoded)
+            );
+            JsonNode root = objectMapper.readTree(response);
+
+            if (root.has("error")) {
+                return CompletableFuture.completedFuture(
+                        buildErrorResult(originalFilename, root.get("error"))
+                );
+            }
+            String hash = root.path("images").path("bytes").path("hash").asText();
+            boolean isSuccess = hash != null && !hash.isBlank();
+
+            return CompletableFuture.completedFuture(
+                    ImageUploadResult.builder()
+                    .originalFilename(originalFilename)
+                    .imageHash(hash)
+                    .success(isSuccess)
+                    .reason(
+                            isSuccess ? null :
+                                    messageSource.getMessage(
+                                            "creative.file.hash.missing",
+                                            null,
+                                            LocaleContextHolder.getLocale()
+                                    )
+                    )
+                    .build()
+            );
+        } catch (Exception ex) {
+            String defaultMessage = messageSource.getMessage(
+                    "validation.default",
+                    null,
+                    LocaleContextHolder.getLocale()
+            );
+
+            return CompletableFuture.completedFuture(
+                    ImageUploadResult.builder()
+                            .originalFilename(originalFilename)
+                            .imageHash(null)
+                            .success(false)
+                            .reason(defaultMessage + ": " + ex.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    private ImageUploadResult buildErrorResult(String originalFilename, JsonNode errorNode) {
+        String title = errorNode.path("error_user_title").asText(null);
+        String msg = errorNode.path("error_user_msg").asText(null);
+        String fallback = errorNode.path("message").asText(
+                messageSource.getMessage(
+                        "validation.default",
+                        null,
+                        LocaleContextHolder.getLocale()
+                )
+        );
+        return ImageUploadResult.builder()
+                .originalFilename(originalFilename)
+                .imageHash(null)
+                .success(false)
+                .reason(title != null ? title + ": " + msg : fallback)
+                .build();
+    }
 }
