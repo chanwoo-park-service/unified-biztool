@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -43,6 +44,27 @@ public class HttpClientHelper {
                 .uri(url)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(formData)
+                .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> {
+                                    log.warn("POST 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
+                                    return Mono.error(new RuntimeException("POST 실패 (" + url + "): " + errorBody.replace("\"", "")));
+                                })
+                )
+                .bodyToMono(String.class)
+                .block();
+    }
+
+    public String postMultipart(String url, Consumer<MultipartBodyBuilder> builderConsumer) {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builderConsumer.accept(builder);
+        log.info("POST Multipart {}", url);
+        return webClient.post()
+                .uri(url)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),
