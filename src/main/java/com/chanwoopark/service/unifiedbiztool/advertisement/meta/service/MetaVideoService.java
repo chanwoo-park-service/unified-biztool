@@ -144,8 +144,7 @@ public class MetaVideoService {
             );
 
         } catch (IOException e) {
-            String finalUploadSessionId = uploadSessionId;
-            postCancel(url, finalUploadSessionId);
+            postCancel(url, uploadSessionId);
 
             String reason =
                     messageSource.getMessage(
