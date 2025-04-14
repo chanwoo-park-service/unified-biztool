@@ -41,4 +41,6 @@ public class AdRequest {
     private String cafe24Url;
     @NotNull(message = "{adRequest.metaCreativeFormat.notnull}")
     private MetaCreativeFormat metaCreativeFormat;
+    @NotNull(message = "{adRequest.pageId.notnull}")
+    private String pageId;
 }

@@ -1,5 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.common.http;
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.HttpClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +30,7 @@ public class HttpClientHelper {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
                                     log.warn("GET 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
-                                    return Mono.error(new RuntimeException("GET 실패 (" + url + "): " + errorBody.replace("\"", "")));
+                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "GET : " + errorBody.replace("\"", "")));
                                 })
                 )
                 .bodyToMono(String.class)
@@ -50,10 +51,28 @@ public class HttpClientHelper {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
                                     log.warn("POST 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
-                                    return Mono.error(new RuntimeException("POST 실패 (" + url + "): " + errorBody.replace("\"", "")));
+                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "POST : " + errorBody.replace("\"", "")));
                                 })
                 )
                 .bodyToMono(String.class)
+                .block();
+    }
+
+    public String postFormIgnoreFail(String url, Consumer<BodyInserters.FormInserter<String>> formBuilder) {
+        BodyInserters.FormInserter<String> formData = BodyInserters.fromFormData("", "");
+        formBuilder.accept(formData);
+        log.info("POST {}", url);
+        return webClient.post()
+                .uri(url)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .body(formData)
+                .exchangeToMono(response -> {
+                    if (response.statusCode().isError()) {
+                        return response.bodyToMono(String.class)
+                                .doOnNext(body -> log.warn("POST 실패 - 상태: {}, 본문: {}", response.statusCode(), body));
+                    }
+                    return response.bodyToMono(String.class);
+                })
                 .block();
     }
 
@@ -71,10 +90,28 @@ public class HttpClientHelper {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
                                     log.warn("POST 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
-                                    return Mono.error(new RuntimeException("POST 실패 (" + url + "): " + errorBody.replace("\"", "")));
+                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "POST : " + errorBody.replace("\"", "")));
                                 })
                 )
                 .bodyToMono(String.class)
+                .block();
+    }
+
+    public String postMultipartIgnoreFail(String url, Consumer<MultipartBodyBuilder> builderConsumer) {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builderConsumer.accept(builder);
+        log.info("POST Multipart {}", url);
+        return webClient.post()
+                .uri(url)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .exchangeToMono(response -> {
+                    if (response.statusCode().isError()) {
+                        return response.bodyToMono(String.class)
+                                .doOnNext(body -> log.warn("POST 실패 - 상태: {}, 본문: {}", response.statusCode(), body));
+                    }
+                    return response.bodyToMono(String.class);
+                })
                 .block();
     }
 

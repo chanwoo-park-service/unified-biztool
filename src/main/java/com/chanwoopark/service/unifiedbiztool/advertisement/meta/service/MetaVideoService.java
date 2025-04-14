@@ -53,7 +53,7 @@ public class MetaVideoService {
                 + Objects.requireNonNull(accountId)
                 + "/advideos";
 
-        String response = httpClientHelper.postForm(
+        String response = httpClientHelper.postFormIgnoreFail(
                 url,
                 form -> form
                         .with("access_token", accessToken)
@@ -112,7 +112,7 @@ public class MetaVideoService {
                 endOffset = chunk.endOffset();
             }
             String finalUploadSessionId = uploadSessionId;
-            String finishResponse = httpClientHelper.postForm(url,
+            String finishResponse = httpClientHelper.postFormIgnoreFail(url,
                     form -> form
                             .with("access_token", accessToken)
                             .with("upload_phase", MetaVideoUploadPhase.FINISH.getPhase())
@@ -175,7 +175,7 @@ public class MetaVideoService {
         try {
             ByteArrayResource chunkResource = getChunkResource(startOffset, endOffset, multipartFile);
 
-            String response = httpClientHelper.postMultipart(
+            String response = httpClientHelper.postMultipartIgnoreFail(
                     url,
                     form -> {
                         form.part("access_token", accessToken);
@@ -215,7 +215,7 @@ public class MetaVideoService {
 
     private void postCancel(String url, String uploadSessionId) {
         log.warn("[청크 API 업로드 실패] : {}", uploadSessionId);
-        httpClientHelper.postForm(url,
+        httpClientHelper.postFormIgnoreFail(url,
                 form -> form
                         .with("access_token", accessToken)
                         .with("upload_phase", MetaVideoUploadPhase.CANCEL.getPhase())
