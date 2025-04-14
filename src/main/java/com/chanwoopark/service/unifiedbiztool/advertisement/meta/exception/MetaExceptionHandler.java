@@ -8,6 +8,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +29,23 @@ public class MetaExceptionHandler {
                 ErrorResponse.of(
                         HttpStatus.INTERNAL_SERVER_ERROR,
                         ex.getMessage(),
+                        httpServletRequest.getRequestURI()
+                )
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest httpServletRequest) {
+        log.error(ex.getMessage());
+        String message = messageSource.getMessage(
+                "validation.default",
+                null,
+                LocaleContextHolder.getLocale()
+        ) + ": " + ex.getMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ErrorResponse.of(
+                        HttpStatus.BAD_REQUEST,
+                        message,
                         httpServletRequest.getRequestURI()
                 )
         );
