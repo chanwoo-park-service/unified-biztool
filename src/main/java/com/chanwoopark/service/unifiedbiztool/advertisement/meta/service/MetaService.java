@@ -1,5 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.service;
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.HttpClientException;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.InvalidExcelFormatException;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
@@ -15,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,7 +77,7 @@ public class MetaService {
                     .toList();
 
         } catch (IOException e) {
-            throw new IllegalArgumentException("엑셀 파일 처리 중 오류 발생", e);
+            throw new InvalidExcelFormatException("validation.default");
         }
     }
 
@@ -240,7 +242,7 @@ public class MetaService {
         try {
             byte[] fileBytes = file.getBytes();
             String encoded = Base64.getEncoder().encodeToString(fileBytes);
-            String response = httpClientHelper.postForm(META_URL
+            String response = httpClientHelper.postFormIgnoreFail(META_URL
                             + "/v22.0/"
                             + adAccountId
                             + "/adimages",
@@ -307,5 +309,23 @@ public class MetaService {
                 .success(false)
                 .reason(title != null ? title + ": " + msg : fallback)
                 .build();
+    }
+
+    public List<MetaAccountResponse> getAccounts() {
+        String response = httpClientHelper.get(
+                META_URL
+                + "/v22.0/me/accounts1"
+                + "?access_token="
+                + accessToken
+                + "&fields=name,link,username,emails,website,phone,about,picture"
+                + "&limit=1000"
+        );
+        try {
+            MetaAccountListResponse accountList = objectMapper.readValue(response, MetaAccountListResponse.class);
+            return accountList.getData();
+        } catch (JsonProcessingException e) {
+            throw new HttpClientException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "meta.api.error.generic");
+        }
+
     }
 }
