@@ -1,9 +1,7 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.controller;
 
 
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.AdRequest;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.AdResponse;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.ExcelResponse;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.service.MetaService;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.validation.MetaValidator;
 import com.chanwoopark.service.unifiedbiztool.common.model.dto.Response;
@@ -25,6 +23,14 @@ public class MetaController {
     private final MetaService metaService;
 
     private final MetaValidator metaValidator;
+
+    @GetMapping("/accounts")
+    public ResponseEntity<Response<List<MetaAccountResponse>>> accounts() {
+        return ResponseEntity.ok(Response.of(
+                HttpStatus.OK,
+                metaService.getAccounts()
+        ));
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<Response<List<ExcelResponse>>> uploadExcel(@RequestParam("file") MultipartFile file) throws IOException {
