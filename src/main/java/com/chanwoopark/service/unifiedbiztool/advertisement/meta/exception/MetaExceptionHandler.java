@@ -34,6 +34,18 @@ public class MetaExceptionHandler {
         );
     }
 
+    @ExceptionHandler(HttpClientException.class)
+    public ResponseEntity<ErrorResponse> handleHttpClientException(HttpClientException ex, HttpServletRequest httpServletRequest) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ErrorResponse.of(
+                        HttpStatus.BAD_REQUEST,
+                        ex.getMessage(),
+                        httpServletRequest.getRequestURI()
+                )
+        );
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest httpServletRequest) {
         log.error(ex.getMessage());
