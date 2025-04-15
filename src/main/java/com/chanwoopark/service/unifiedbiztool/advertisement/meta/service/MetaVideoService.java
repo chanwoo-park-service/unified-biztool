@@ -7,7 +7,6 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.Met
 import com.chanwoopark.service.unifiedbiztool.common.http.HttpClientHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.ByteArrayResource;
