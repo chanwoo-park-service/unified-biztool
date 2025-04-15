@@ -5,6 +5,8 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.Inval
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
 import com.chanwoopark.service.unifiedbiztool.common.http.HttpClientHelper;
+import com.chanwoopark.service.unifiedbiztool.common.model.enums.Platform;
+import com.chanwoopark.service.unifiedbiztool.common.service.PlatformTokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -42,9 +43,7 @@ public class MetaService {
 
     private final ObjectMapper objectMapper;
 
-
-    @Value("${app.meta.ads.access-token}")
-    private String accessToken;
+    private final PlatformTokenService platformTokenService;
 
     private final String META_URL = "https://graph.facebook.com";
 
@@ -126,6 +125,8 @@ public class MetaService {
     }
 
     private ExcelResponse processMetaIdentifiers(@Valid ExcelRowDto excelRowDto) throws JsonProcessingException {
+        String accessToken = platformTokenService.getToken(Platform.META);
+
         String accountIdResponse = httpClientHelper.get(
                 META_URL
                         + "/v22.0/me/adaccounts?access_token="
@@ -219,13 +220,14 @@ public class MetaService {
 
 
     public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files) {
+        String accessToken = platformTokenService.getToken(Platform.META);
         List<CompletableFuture<UploadResult>> futureResults = new ArrayList<>();
         for (MultipartFile file : files) {
             String contentType = file.getContentType();
             if (Objects.requireNonNull(contentType).startsWith("image/")) {
                 futureResults.add(uploadImage(adRequest.getAdAccountId(), file));
             } else if (contentType.startsWith("video/")) {
-                futureResults.add(metaVideoService.uploadVideo(adRequest.getAdAccountId(), file));
+                futureResults.add(metaVideoService.uploadVideo(adRequest.getAdAccountId(), file, accessToken));
             }
         }
         List<UploadResult> uploadResults = futureResults.stream()
@@ -239,6 +241,7 @@ public class MetaService {
     @Async
     public CompletableFuture<UploadResult> uploadImage(String adAccountId, MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
+        String accessToken = platformTokenService.getToken(Platform.META);
         try {
             byte[] fileBytes = file.getBytes();
             String encoded = Base64.getEncoder().encodeToString(fileBytes);
@@ -312,6 +315,7 @@ public class MetaService {
     }
 
     public List<MetaAccountResponse> getAccounts() {
+        String accessToken = platformTokenService.getToken(Platform.META);
         String response = httpClientHelper.get(
                 META_URL
                 + "/v22.0/me/accounts1"
@@ -326,6 +330,23 @@ public class MetaService {
         } catch (JsonProcessingException e) {
             throw new HttpClientException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "meta.api.error.generic");
         }
+    }
+    public void validateToken() {
+        String accessToken = platformTokenService.getToken(Platform.META);
 
+        healthCheck(accessToken);
+    }
+
+    private void healthCheck(String accessToken) {
+        String url = META_URL
+                + "/v22.0/me?access_token="
+                + accessToken
+                ;
+        httpClientHelper.get(url);
+    }
+
+    public void insertToken(String accessToken) {
+        platformTokenService.saveOrUpdateToken(Platform.META, accessToken);
     }
 }
+
