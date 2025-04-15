@@ -34,15 +34,13 @@ public class MetaVideoService {
 
     private final String META_URL = "https://graph.facebook.com";
 
-    @Value("${app.meta.ads.access-token}")
-    private String accessToken;
-
     private final ObjectMapper objectMapper;
 
     @Async
     public CompletableFuture<UploadResult>  uploadVideo(
             String accountId,
-            MultipartFile file
+            MultipartFile file,
+            String accessToken
     ) {
         long fileSize = file.getSize();
         String originalFilename = file.getOriginalFilename();
@@ -92,9 +90,9 @@ public class MetaVideoService {
 
 
             while (!startOffset.equals(endOffset)) {
-                VideoChunkResponse chunk = transferChunk(startOffset, endOffset, url, uploadSessionId, file);
+                VideoChunkResponse chunk = transferChunk(startOffset, endOffset, url, uploadSessionId, file, accessToken);
                 if (!chunk.success()) {
-                    postCancel(url, uploadSessionId);
+                    postCancel(url, uploadSessionId, accessToken);
                     return CompletableFuture.completedFuture(
                             VideoUploadResult.builder()
                                     .success(false)
@@ -144,7 +142,7 @@ public class MetaVideoService {
             );
 
         } catch (IOException e) {
-            postCancel(url, uploadSessionId);
+            postCancel(url, uploadSessionId, accessToken);
 
             String reason =
                     messageSource.getMessage(
@@ -169,7 +167,8 @@ public class MetaVideoService {
             String endOffset,
             String url,
             String uploadSessionId,
-            MultipartFile multipartFile
+            MultipartFile multipartFile,
+            String accessToken
     ) {
 
         try {
@@ -206,14 +205,14 @@ public class MetaVideoService {
                     .success(true)
                     .build();
         } catch (IOException ioException) {
-            postCancel(url, uploadSessionId);
+            postCancel(url, uploadSessionId, accessToken);
             return VideoChunkResponse.builder()
                     .success(false)
                     .build();
         }
     }
 
-    private void postCancel(String url, String uploadSessionId) {
+    private void postCancel(String url, String uploadSessionId, String accessToken) {
         log.warn("[청크 API 업로드 실패] : {}", uploadSessionId);
         httpClientHelper.postFormIgnoreFail(url,
                 form -> form
