@@ -318,7 +318,7 @@ public class MetaService {
         String accessToken = platformTokenService.getToken(Platform.META);
         String response = httpClientHelper.get(
                 META_URL
-                + "/v22.0/me/accounts1"
+                + "/v22.0/me/accounts"
                 + "?access_token="
                 + accessToken
                 + "&fields=name,link,username,emails,website,phone,about,picture"
