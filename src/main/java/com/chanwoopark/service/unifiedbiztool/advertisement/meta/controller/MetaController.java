@@ -1,10 +1,13 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.controller;
 
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.HttpClientException;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.service.MetaService;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.validation.MetaValidator;
+import com.chanwoopark.service.unifiedbiztool.common.exception.TokenNotFoundException;
 import com.chanwoopark.service.unifiedbiztool.common.model.dto.Response;
+import com.chanwoopark.service.unifiedbiztool.common.model.dto.TokenRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,5 +61,25 @@ public class MetaController {
                         metaService.publishAd(adRequest, files)
                 )
         );
+    }
+
+    @GetMapping("/token")
+    public ResponseEntity<String> checkTokenHealth() {
+        try {
+            metaService.validateToken();
+            return ResponseEntity.ok().build();
+        } catch (TokenNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (HttpClientException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/token")
+    public ResponseEntity<Void> insertToken(@RequestBody TokenRequest tokenRequest) {
+        metaService.insertToken(tokenRequest.accessToken());
+        return ResponseEntity.ok().build();
     }
 }

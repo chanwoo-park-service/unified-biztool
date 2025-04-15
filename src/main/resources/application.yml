@@ -23,6 +23,7 @@ spring:
     properties:
       hibernate:
 app:
-  meta:
-    ads:
-      access-token: ${META_ACCESS_TOKEN}
+  token:
+    encrypt:
+      password: ${AES_PASSWORD}
+      salt: ${AES_SALT}
