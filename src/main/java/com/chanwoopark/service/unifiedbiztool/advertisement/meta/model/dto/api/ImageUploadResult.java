@@ -1,4 +1,4 @@
-package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto;
+package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -7,4 +7,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ImageUploadResult extends UploadResult {
     private final String imageHash;
+    private final String url;
 }
