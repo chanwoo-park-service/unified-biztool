@@ -1,6 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.validation;
 
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.AdRequest;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.AdRequest;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -28,7 +28,7 @@ public class MetaValidator {
             "video/quicktime"
     );
 
-    public void validateCreativeFormat(AdRequest request, List<MultipartFile> files) {
+    public void validateCreativeFormat(AdRequest request, List<MultipartFile> files, List<MultipartFile> thumbnails) {
         MetaCreativeFormat format = request.getMetaCreativeFormat();
         if (format == null) {
             throw new IllegalArgumentException(
@@ -51,8 +51,22 @@ public class MetaValidator {
                     );
                 }
                 validateFileType(files.get(0));
+
+
+                if (isVideo(files.get(0).getContentType())) {
+                    if (thumbnails == null || thumbnails.isEmpty() || !isImage(thumbnails.get(0).getContentType())) {
+                        throw new IllegalArgumentException(
+                                messageSource.getMessage(
+                                        "creative.file.thumbnails.required",
+                                        new Object[]{1, thumbnails == null ? 0 : thumbnails.size()},
+                                        LocaleContextHolder.getLocale())
+                        );
+                    }
+                }
+
             }
             case SLIDESHOW -> {
+
                 if (files == null || files.size() < 2) {
                     throw new IllegalArgumentException(
                             messageSource.getMessage(
@@ -60,20 +74,26 @@ public class MetaValidator {
                                     null,
                                     LocaleContextHolder.getLocale())
                     );
-                }
-                files.forEach(this::validateFileType);
-
-                boolean allImages = files.stream().allMatch(f -> isImage(f.getContentType()));
-                boolean allVideos = files.stream().allMatch(f -> isVideo(f.getContentType()));
-
-                if (!(allImages || allVideos)) {
+                } else if (files.size() > 10) {
                     throw new IllegalArgumentException(
                             messageSource.getMessage(
-                                    "creative.slideshow.inconsistent.types",
+                                    "creative.slideshow.file.limit.exceeded",
                                     null,
                                     LocaleContextHolder.getLocale())
                     );
                 }
+                boolean allImages = files.stream().allMatch(f -> isImage(f.getContentType()));
+
+                if (!allImages) {
+                    throw new IllegalArgumentException(
+                            messageSource.getMessage(
+                                    "creative.slideshow.require.images",
+                                    null,
+                                    LocaleContextHolder.getLocale())
+                    );
+                }
+
+                files.forEach(this::validateFileType);
             }
         }
     }
