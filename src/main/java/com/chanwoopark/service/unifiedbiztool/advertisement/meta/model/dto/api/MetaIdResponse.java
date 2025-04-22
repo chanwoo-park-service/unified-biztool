@@ -1,4 +1,4 @@
-package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto;
+package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
