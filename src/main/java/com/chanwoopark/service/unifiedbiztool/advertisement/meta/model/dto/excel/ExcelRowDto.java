@@ -1,9 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel;
 
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.AdAccount;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Campaign;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Page;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Set;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignObjective;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignType;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
@@ -63,9 +60,14 @@ public class ExcelRowDto {
     private String blank;
 
     @Setter
+    private List<Pixel> pixelList;
+
+    @Setter
     private boolean pageResolved;
     @Setter
     private boolean accountResolved;
+    @Setter
+    private boolean pixelResolved;
     @Setter
     private boolean campaignResolved;
     @Setter
@@ -116,6 +118,10 @@ public class ExcelRowDto {
 
     public String getFirstAccountId() {
         return adAccountList != null && !adAccountList.isEmpty() ? adAccountList.get(0).getId() : null;
+    }
+
+    public String getFirstPixelId() {
+        return pixelList != null && !pixelList.isEmpty() ? pixelList.get(0).getId() : null;
     }
 
     public List<Integer> getGenders() {

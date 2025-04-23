@@ -19,6 +19,7 @@ public class ExcelResponse {
     private MetaCampaignType metaCampaignType;
     private String adAccountName;
     private List<AdAccount> adAccountList;
+    private List<Pixel> pixelList;
     private String campaignName;
     private List<Campaign> campaignList;
     private Long budget;
@@ -50,6 +51,7 @@ public class ExcelResponse {
     private boolean adAccountResolved;
     private boolean campaignResolved;
     private boolean setResolved;
+    private boolean pixelResolved;
 
     private String errorMessage;
 
@@ -59,6 +61,7 @@ public class ExcelResponse {
                 .adAccountName(dto.getAdAccountName())
                 .metaCampaignType(dto.getMetaCampaignType())
                 .adAccountList(dto.getAdAccountList())
+                .pixelList(dto.getPixelList())
                 .campaignName(dto.getCampaignName())
                 .campaignList(dto.getCampaignList())
                 .budget(dto.getBudget())
@@ -89,6 +92,7 @@ public class ExcelResponse {
                 .adAccountResolved(dto.isAccountResolved())
                 .campaignResolved(dto.isCampaignResolved())
                 .setResolved(dto.isSetResolved())
+                .pixelResolved(dto.isPixelResolved())
                 .errorMessage(dto.getErrorMessage())
                 .build();
     }
