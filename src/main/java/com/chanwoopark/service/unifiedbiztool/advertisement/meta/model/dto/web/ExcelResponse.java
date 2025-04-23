@@ -2,7 +2,7 @@ package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web;
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.CampaignObjective;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignObjective;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignType;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ExcelResponse {
-    private CampaignObjective metaCampaignObjective;
+    private MetaCampaignObjective metaCampaignObjective;
     private MetaCampaignType metaCampaignType;
     private String adAccountName;
     private List<AdAccount> adAccountList;
@@ -27,8 +27,8 @@ public class ExcelResponse {
     private String location;
     private String language;
     private String gender;
-    private long minAge;
-    private long maxAge;
+    private Integer minAge;
+    private String maxAge;
     private String setName;
     private List<Set> setList;
     private String adMaterialName;
@@ -51,9 +51,11 @@ public class ExcelResponse {
     private boolean campaignResolved;
     private boolean setResolved;
 
+    private String errorMessage;
+
     public static ExcelResponse of(ExcelRowDto dto) {
         return ExcelResponse.builder()
-                .metaCampaignObjective(dto.getCampaignObjective())
+                .metaCampaignObjective(dto.getMetaCampaignObjective())
                 .adAccountName(dto.getAdAccountName())
                 .metaCampaignType(dto.getMetaCampaignType())
                 .adAccountList(dto.getAdAccountList())
@@ -87,6 +89,7 @@ public class ExcelResponse {
                 .adAccountResolved(dto.isAccountResolved())
                 .campaignResolved(dto.isCampaignResolved())
                 .setResolved(dto.isSetResolved())
+                .errorMessage(dto.getErrorMessage())
                 .build();
     }
 
