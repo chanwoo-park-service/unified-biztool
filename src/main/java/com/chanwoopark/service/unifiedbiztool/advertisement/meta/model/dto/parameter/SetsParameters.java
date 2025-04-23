@@ -4,6 +4,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.P
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Targeting;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.utils.MetaParameterParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
@@ -101,11 +102,11 @@ public class SetsParameters {
                         Targeting.builder()
                                 .geoLocations(
                                         Targeting.GeoLocations.builder()
-                                                .countries(excelRowDto.getGeoLocation())
+                                                .countries(MetaParameterParser.getGeoLocation(excelRowDto.getLocation()))
                                                 .build()
                                 )
-                                .genders(excelRowDto.getGenders())
-                                .locales(excelRowDto.getLocales())
+                                .genders(MetaParameterParser.getGenders(excelRowDto.getGender()))
+                                .locales(MetaParameterParser.getLocales(excelRowDto.getLanguage()))
                                 .build()
                 )
                 .build();

@@ -124,40 +124,6 @@ public class ExcelRowDto {
         return pixelList != null && !pixelList.isEmpty() ? pixelList.get(0).getId() : null;
     }
 
-    public List<Integer> getGenders() {
-        return switch (getGender()) {
-            case "남자":
-                yield List.of(1);
-            case "여자":
-                yield List.of(2);
-            case "모든 성별":
-                yield List.of(1, 2);
-            default:
-                throw new IllegalStateException("Unexpected value: " + getGender());
-        };
-    }
-
-    public List<String> getGeoLocation() {
-        return switch (getLocation()) {
-            case "대한민국":
-                yield List.of("KR");
-            case "일본":
-                yield List.of("JP");
-            default:
-                throw new IllegalStateException("Unexpected value: " + getGender());
-        };
-    }
-
-    public List<Integer> getLocales() {
-        return switch (getLanguage()) {
-            case "한국어":
-                yield List.of(3);
-            case "영어":
-                yield List.of(4);
-            default:
-                throw new IllegalStateException("Unexpected value: " + getGender());
-        };
-    }
 
     private static LocalDate parseDate(Cell cell) {
         if (cell == null) return null;
