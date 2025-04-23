@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <body>
 <header th:fragment="HeaderFragment" class="header">
@@ -9,83 +10,14 @@
                 <div class="header-left d-flex align-items-center">
                     <div class="menu-toggle-btn mr-15">
                         <button id="menu-toggle" class="main-btn primary-btn btn-hover">
-                            <i class="lni lni-chevron-left me-2"></i> Menu
+                            <i class="lni lni-chevron-left me-2"></i> 메뉴
                         </button>
-                    </div>
-                    <div class="header-search d-none d-md-flex">
-                        <form action="#">
-                            <input type="text" placeholder="Search..." />
-                            <button><i class="lni lni-search-alt"></i></button>
-                        </form>
                     </div>
                 </div>
             </div>
             <div class="col-lg-7 col-md-7 col-6">
                 <div class="header-right">
-                    <!-- notification start -->
-                    <div class="notification-box ml-15 d-none d-md-flex">
-                        <button class="dropdown-toggle" type="button" id="notification" data-bs-toggle="dropdown" aria-expanded="false">
-                            <!-- SVG 내용은 그대로 유지 -->
-                            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">...</svg>
-                            <span></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification">
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <!-- Thymeleaf URL 사용 -->
-                                        <img th:src="@{/images/lead/lead-6.png}" alt="" />
-                                    </div>
-                                    <div class="content">
-                                        <h6> John Doe <span class="text-regular"> comment on a product. </span> </h6>
-                                        <p> Lorem ipsum dolor sit amet, consect etur adipiscing elit Vivamus tortor. </p>
-                                        <span>10 mins ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <!-- Thymeleaf URL 사용 -->
-                                        <img th:src="@{/images/lead/lead-1.png}" alt="" />
-                                    </div>
-                                    <div class="content">
-                                        <h6> Jonathon <span class="text-regular"> like on a product. </span> </h6>
-                                        <p> Lorem ipsum dolor sit amet, consect etur adipiscing elit Vivamus tortor. </p>
-                                        <span>10 mins ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- notification end -->
-                    <!-- message start -->
-                    <div class="header-message-box ml-15 d-none d-md-flex">
-                        <button class="dropdown-toggle" type="button" id="message" data-bs-toggle="dropdown" aria-expanded="false">
-                            <!-- SVG 내용은 그대로 유지 -->
-                            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">...</svg>
-                            <span></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="message">
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <!-- Thymeleaf URL 사용 -->
-                                        <img th:src="@{/images/lead/lead-5.png}" alt="" />
-                                    </div>
-                                    <div class="content">
-                                        <h6>Jacob Jones</h6>
-                                        <p>Hey!I can across your profile and ...</p>
-                                        <span>10 mins ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <!-- 다른 메시지 항목들도 유사하게 이미지 경로 수정 -->
-                        </ul>
-                    </div>
-                    <!-- message end -->
-                    <!-- profile start -->
-                    <div class="profile-box ml-15">
+                    <div class="profile-box ml-15" sec:authorize="isAuthenticated()">
                         <button class="dropdown-toggle bg-transparent border-0" type="button" id="profile" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="profile-info">
                                 <div class="info">
@@ -94,8 +26,8 @@
                                         <img th:src="@{/images/profile/profile-image.png}" alt="" />
                                     </div>
                                     <div>
-                                        <h6 class="fw-500">Adam Joe</h6>
-                                        <p>Admin</p>
+                                        <h6 class="fw-500" th:text="${#authentication.name}">Adam Joe</h6>
+                                        <p th:text="${#authentication.authorities[0].authority}">Admin</p>
                                     </div>
                                 </div>
                             </div>
@@ -108,18 +40,19 @@
                                         <img th:src="@{/images/profile/profile-image.png}" alt="image">
                                     </div>
                                     <div class="content">
-                                        <h4 class="text-sm">Adam Joe</h4>
-                                        <a class="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white text-xs" href="#">Email@gmail.com</a>
+                                        <h4 class="text-sm" th:text="${#authentication.name}">Adam Joe</h4>
+                                        <a class="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white text-xs" href="#"></a>
                                     </div>
                                 </div>
                             </li>
                             <li class="divider"></li>
-                            <li> <a href="#0"> <i class="lni lni-user"></i> View Profile </a> </li>
-                            <li> <a href="#0"> <i class="lni lni-alarm"></i> Notifications </a> </li>
-                            <li> <a href="#0"> <i class="lni lni-inbox"></i> Messages </a> </li>
-                            <li> <a href="#0"> <i class="lni lni-cog"></i> Settings </a> </li>
+                            <li> <a href="/setting"> <i class="lni lni-cog"></i> 설정 </a> </li>
                             <li class="divider"></li>
-                            <li> <a href="#0"> <i class="lni lni-exit"></i> Sign Out </a> </li>
+                            <li>
+                                <a href="javascript:void(0);" onclick="logout()">
+                                    <i class="lni lni-cog"></i> 로그아웃
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <!-- profile end -->
@@ -127,6 +60,32 @@
             </div>
         </div>
     </div>
+    <script>
+        function logout() {
+            function getCsrfToken() {
+                const tokenElement = document.querySelector('meta[name="_csrf"]');
+                return tokenElement ? tokenElement.getAttribute('content') : null;
+            }
+
+            const csrfToken = getCsrfToken();
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            form.style.display = 'none';
+
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 </header>
 </body>
 

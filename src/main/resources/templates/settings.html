@@ -1,25 +1,22 @@
 <!DOCTYPE html>
-<!-- 레이아웃 파일 지정 및 네임스페이스 추가 -->
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{common/layout/defaultLayout}">
-
 <head>
-  <!-- 페이지별 타이틀 설정 -->
-  <title>TOKEN 등록</title>
-</head>
+    <title>설정</title>
+  </head>
+  <body>
 
-<body>
-
-<!-- layout:fragment="content" 영역에 들어갈 실제 콘텐츠 -->
-<div layout:fragment="content">
-  <!-- ========== title-wrapper start ========== -->
+      <!-- ========== section start ========== -->
+      <section class="section" layout:fragment="content">
+        <div class="container-fluid">
+          <!-- ========== title-wrapper start ========== -->
           <div class="title-wrapper pt-30">
             <div class="row align-items-center">
               <div class="col-md-6">
                 <div class="title">
-                  <h2>Settings</h2>
+                  <h2>설정</h2>
                 </div>
               </div>
               <!-- end col -->
@@ -48,119 +45,27 @@
             <div class="col-lg-6">
               <div class="card-style settings-card-1 mb-30">
                 <div class="title mb-30 d-flex justify-content-between align-items-center">
-                  <h6>My Profile</h6>
-                  <button class="border-0 bg-transparent">
-                    <i class="lni lni-pencil-alt"></i>
+                  <h6>META</h6>
+                </div>
+                <div class="input-style-1">
+                    <label for="meta">토큰</label>
+                    <input id="meta" type="text" placeholder="" value="" />
+                </div>
+                <div class="col-12 input-style-1">
+                  <button class="main-btn danger-btn btn-hover">
+                    토큰 수정
                   </button>
                 </div>
-                <div class="profile-info">
-                  <div class="d-flex align-items-center mb-30">
-                    <div class="profile-image">
-                      <img src="/images/profile/profile-1.png" alt="" />
-                      <div class="update-image">
-                        <input type="file" />
-                        <label for=""><i class="lni lni-cloud-upload"></i></label>
-                      </div>
-                    </div>
-                    <div class="profile-meta">
-                      <h5 class="text-bold text-dark mb-10">John Doe</h5>
-                      <p class="text-sm text-gray">Web & UI/UX Design</p>
-                    </div>
-                  </div>
-                  <div class="input-style-1">
-                    <label>Email</label>
-                    <input type="email" placeholder="admin@example.com" value="admin@example.com" />
-                  </div>
-                  <div class="input-style-1">
-                    <label>Password</label>
-                    <input type="password" value="admin@example.com" />
-                  </div>
-                  <div class="input-style-1">
-                    <label>Website</label>
-                    <input type="text" placeholder="www.uideck.com" value="www.uideck.com" />
-                  </div>
-                  <div class="input-style-1">
-                    <label>Bio</label>
-                    <textarea placeholder="Write your bio here" rows="4">
-  Crafted for – Business, Startup, SaaS, Apps, Event, Software, Agency, Resume and Portfolio. All Landing Pages comes with clean design and responsive layout. Also packed with all essential sections, elements, and features you need to launch</textarea>
-                  </div>
+                <div class="input-style-1">
+                  <label for="meat-health">토큰 상태</label>
+                  <input id="meat-health" type="text" disabled value="" />
                 </div>
-              </div>
-              <!-- end card -->
-            </div>
-            <!-- end col -->
-
-            <div class="col-lg-6">
-              <div class="card-style settings-card-2 mb-30">
-                <div class="title mb-30">
-                  <h6>My Profile</h6>
+                <div class="col-12">
+                  <button class="main-btn primary-btn btn-hover">
+                    토큰 상태 확인
+                  </button>
                 </div>
-                <form action="#">
-                  <div class="row">
-                    <div class="col-12">
-                      <div class="input-style-1">
-                        <label>Full Name</label>
-                        <input type="text" placeholder="Full Name" />
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="input-style-1">
-                        <label>Email</label>
-                        <input type="email" placeholder="Email" />
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="input-style-1">
-                        <label>Company</label>
-                        <input type="text" placeholder="Company" />
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="input-style-1">
-                        <label>Address</label>
-                        <input type="text" placeholder="Address" />
-                      </div>
-                    </div>
-                    <div class="col-xxl-4">
-                      <div class="input-style-1">
-                        <label>City</label>
-                        <input type="text" placeholder="City" />
-                      </div>
-                    </div>
-                    <div class="col-xxl-4">
-                      <div class="input-style-1">
-                        <label>Zip Code</label>
-                        <input type="text" placeholder="Zip Code" />
-                      </div>
-                    </div>
-                    <div class="col-xxl-4">
-                      <div class="select-style-1">
-                        <label>Country</label>
-                        <div class="select-position">
-                          <select class="light-bg">
-                            <option value="">Select category</option>
-                            <option value="">USA</option>
-                            <option value="">UK</option>
-                            <option value="">Canada</option>
-                            <option value="">India</option>
-                            <option value="">Bangladesh</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="input-style-1">
-                        <label>About Me</label>
-                        <textarea placeholder="Type here" rows="6"></textarea>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <button class="main-btn primary-btn btn-hover">
-                        Update Profile
-                      </button>
-                    </div>
-                  </div>
-                </form>
+                </div>
               </div>
               <!-- end card -->
             </div>
@@ -171,36 +76,6 @@
         <!-- end container -->
       </section>
       <!-- ========== section end ========== -->
-
-      <!-- ========== footer start =========== -->
-      <footer class="footer">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-6 order-last order-md-first">
-              <div class="copyright text-center text-md-start">
-                <p class="text-sm">
-                  Designed and Developed by
-                  <a href="https://plainadmin.com" rel="nofollow" target="_blank">
-                    PlainAdmin
-                  </a>
-                </p>
-              </div>
-            </div>
-            <!-- end col-->
-            <div class="col-md-6">
-              <div class="terms d-flex justify-content-center justify-content-md-end">
-                <a href="#0" class="text-sm">Term & Conditions</a>
-                <a href="#0" class="text-sm ml-15">Privacy & Policy</a>
-              </div>
-            </div>
-          </div>
-          <!-- end row -->
-        </div>
-        <!-- end container -->
-      </footer>
-      <!-- ========== footer end =========== -->
-    </main>
-    <!-- ======== main-wrapper end =========== -->
 
     <!-- ========= All Javascript files linkup ======== -->
     <script src="/js/bootstrap.bundle.min.js"></script>
