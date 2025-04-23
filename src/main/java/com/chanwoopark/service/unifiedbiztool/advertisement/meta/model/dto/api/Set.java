@@ -36,4 +36,7 @@ public class Set {
 
     @JsonProperty("start_time")
     private String startTime;
+
+    @JsonProperty("promoted_object")
+    private PromotedObject promotedObject;
 }
