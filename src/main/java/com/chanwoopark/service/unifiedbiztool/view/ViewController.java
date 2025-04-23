@@ -13,6 +13,7 @@ public class ViewController {
         return new ModelAndView("index");
     }
 
+
     @GetMapping("/setting")
     public ModelAndView setting() {
         return new ModelAndView("settings");
@@ -20,7 +21,12 @@ public class ViewController {
 
     @GetMapping("/upload-page")
     public ModelAndView uploadPage() {
-        return new ModelAndView("uploadPage");
+        return new ModelAndView("upload-page");
+    }
+
+    @GetMapping("/signin")
+    public ModelAndView signin() {
+        return new ModelAndView("signin");
     }
 
     @GetMapping("/login")

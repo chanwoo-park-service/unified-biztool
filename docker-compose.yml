@@ -3,7 +3,7 @@ version: '3.8'
 services:
   redis:
     image: redis:7.2
-    container_name: unified-biztool-db
+    container_name: unified-biztool-redis
     ports:
       - "6379:6379"
     volumes:
