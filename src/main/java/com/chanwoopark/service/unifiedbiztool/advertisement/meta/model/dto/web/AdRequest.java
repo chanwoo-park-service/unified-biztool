@@ -1,4 +1,4 @@
-package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto;
+package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web;
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignType;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
@@ -27,8 +27,8 @@ public class AdRequest {
     private String setName;
     @NotNull(message = "{adRequest.setId.notnull}")
     private String setId;
-    @NotNull(message = "{adRequest.adName.notnull}")
-    private String adName;
+    @NotNull(message = "{adRequest.adMaterialName.notnull}")
+    private String adMaterialName;
     private String shortUrl;
     private String displayUrl;
     private String uploadPage;
@@ -43,4 +43,6 @@ public class AdRequest {
     private MetaCreativeFormat metaCreativeFormat;
     @NotNull(message = "{adRequest.pageId.notnull}")
     private String pageId;
+    @NotNull(message = "{adRequest.pixelId.notnull}")
+    private String pixelId;
 }

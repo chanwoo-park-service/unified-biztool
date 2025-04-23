@@ -1,8 +1,9 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.service;
 
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.UploadResult;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.VideoChunkResponse;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.VideoUploadResult;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.ImageUploadResult;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.UploadResult;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.VideoChunkResponse;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.VideoUploadResult;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaVideoUploadPhase;
 import com.chanwoopark.service.unifiedbiztool.common.http.HttpClientHelper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class MetaVideoService {
+public class MetaUploadService {
 
     private final HttpClientHelper httpClientHelper;
 
@@ -36,10 +38,11 @@ public class MetaVideoService {
     private final ObjectMapper objectMapper;
 
     @Async
-    public CompletableFuture<UploadResult>  uploadVideo(
+    public CompletableFuture<UploadResult> uploadVideo(
             String accountId,
             MultipartFile file,
-            String accessToken
+            String accessToken,
+            MultipartFile thumbnail
     ) {
         long fileSize = file.getSize();
         String originalFilename = file.getOriginalFilename();
@@ -129,6 +132,7 @@ public class MetaVideoService {
                             .success(isFinishSuccess)
                             .videoId(videoId)
                             .originalFilename(originalFilename != null ? originalFilename : "")
+                            .thumbnailResult(uploadImage(accountId, thumbnail, accessToken).join())
                             .reason(isFinishSuccess ?
                                     null :
                                     messageSource.getMessage(
@@ -264,4 +268,82 @@ public class MetaVideoService {
             }
         };
     }
+
+    @Async
+    public CompletableFuture<UploadResult> uploadImage(String adAccountId, MultipartFile file, String accessToken) {
+        String originalFilename = file.getOriginalFilename();
+        try {
+            byte[] fileBytes = file.getBytes();
+            String encoded = Base64.getEncoder().encodeToString(fileBytes);
+            String response = httpClientHelper.postFormIgnoreFail(META_URL
+                            + "/v22.0/"
+                            + adAccountId
+                            + "/adimages",
+                    form -> form
+                            .with("access_token", accessToken)
+                            .with("bytes", encoded)
+            );
+            JsonNode root = objectMapper.readTree(response);
+
+            if (root.has("error")) {
+                return CompletableFuture.completedFuture(
+                        buildErrorResult(originalFilename, root.get("error"))
+                );
+            }
+            String hash = root.path("images").path("bytes").path("hash").asText();
+            String url = root.path("images").path("bytes").path("url").asText();
+            boolean isSuccess = hash != null && !hash.isBlank();
+
+            return CompletableFuture.completedFuture(
+                    ImageUploadResult.builder()
+                            .originalFilename(originalFilename)
+                            .imageHash(hash)
+                            .url(url)
+                            .success(isSuccess)
+                            .reason(
+                                    isSuccess ? null :
+                                            messageSource.getMessage(
+                                                    "creative.file.hash.missing",
+                                                    null,
+                                                    LocaleContextHolder.getLocale()
+                                            )
+                            )
+                            .build()
+            );
+        } catch (Exception ex) {
+            String defaultMessage = messageSource.getMessage(
+                    "validation.default",
+                    null,
+                    LocaleContextHolder.getLocale()
+            );
+
+            return CompletableFuture.completedFuture(
+                    ImageUploadResult.builder()
+                            .originalFilename(originalFilename)
+                            .imageHash(null)
+                            .success(false)
+                            .reason(defaultMessage + ": " + ex.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    private ImageUploadResult buildErrorResult(String originalFilename, JsonNode errorNode) {
+        String title = errorNode.path("error_user_title").asText(null);
+        String msg = errorNode.path("error_user_msg").asText(null);
+        String fallback = errorNode.path("message").asText(
+                messageSource.getMessage(
+                        "validation.default",
+                        null,
+                        LocaleContextHolder.getLocale()
+                )
+        );
+        return ImageUploadResult.builder()
+                .originalFilename(originalFilename)
+                .imageHash(null)
+                .success(false)
+                .reason(title != null ? title + ": " + msg : fallback)
+                .build();
+    }
+
 }

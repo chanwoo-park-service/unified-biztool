@@ -2,7 +2,10 @@ package com.chanwoopark.service.unifiedbiztool.advertisement.meta.controller;
 
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.HttpClientException;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.*;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.MetaAccountResponse;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.AdRequest;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.AdResponse;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.ExcelResponse;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.service.MetaService;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.validation.MetaValidator;
 import com.chanwoopark.service.unifiedbiztool.common.exception.TokenNotFoundException;
@@ -49,16 +52,18 @@ public class MetaController {
     @PostMapping("/publish")
     public ResponseEntity<Response<AdResponse>> publishAd(
             @RequestPart("request") @Valid AdRequest adRequest,
-            @RequestPart(name = "files", required = false) List<MultipartFile> files
+            @RequestPart(name = "files", required = false) List<MultipartFile> files,
+            @RequestPart(name = "thumbnails", required = false) List<MultipartFile> thumbnails
     ) {
         metaValidator.validateCreativeFormat(
                 adRequest,
-                files
+                files,
+                thumbnails
         );
         return ResponseEntity.ok(
                 Response.of(
                         HttpStatus.OK,
-                        metaService.publishAd(adRequest, files)
+                        metaService.publishAd(adRequest, files, thumbnails)
                 )
         );
     }

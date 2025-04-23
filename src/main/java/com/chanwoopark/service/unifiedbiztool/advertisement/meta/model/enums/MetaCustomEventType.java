@@ -1,0 +1,36 @@
+package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums;
+
+import lombok.Getter;
+
+@Getter
+public enum MetaCustomEventType {
+    AD_IMPRESSION,
+    RATE,
+    TUTORIAL_COMPLETION,
+    CONTACT,
+    CUSTOMIZE_PRODUCT,
+    DONATE,
+    FIND_LOCATION,
+    SCHEDULE,
+    START_TRIAL,
+    SUBMIT_APPLICATION,
+    SUBSCRIBE,
+    ADD_TO_CART,
+    ADD_TO_WISHLIST,
+    INITIATED_CHECKOUT,
+    ADD_PAYMENT_INFO,
+    PURCHASE,
+    LEAD,
+    COMPLETE_REGISTRATION,
+    CONTENT_VIEW,
+    SEARCH,
+    SERVICE_BOOKING_REQUEST,
+    MESSAGING_CONVERSATION_STARTED_7D,
+    LEVEL_ACHIEVED,
+    ACHIEVEMENT_UNLOCKED,
+    SPENT_CREDITS,
+    LISTING_INTERACTION,
+    D2_RETENTION,
+    D7_RETENTION,
+    OTHER;
+}

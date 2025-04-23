@@ -1,6 +1,7 @@
-package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto;
+package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web;
 
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.UploadResult;
 import lombok.Builder;
 import lombok.Getter;
 
