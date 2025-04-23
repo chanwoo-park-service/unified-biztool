@@ -158,6 +158,23 @@ public class MetaService {
         String accountId = excelRowDto.getFirstAccountId();
         excelRowDto.setAccountResolved(excelRowDto.getAdAccountList() != null && excelRowDto.getAdAccountList().size() == 1);
 
+        List<Pixel> pixelList;
+
+        try {
+            pixelList = getPixels(
+                    accountId,
+                    accessToken
+            );
+        } catch (Exception ex) {
+            excelRowDto.setErrorMessage(
+                    "진행중 오류가 발생했습니다. 예외명 : "
+                            + ex.getClass().getSimpleName()
+                            + ", 메세지 : " + ex.getMessage()
+            );
+            return ExcelResponse.of(excelRowDto);
+        }
+        excelRowDto.setPixelList(pixelList);
+
         List<Campaign> campaignList;
         try {
             campaignList = getCampaigns(excelRowDto, accountId, accessToken);
@@ -237,6 +254,24 @@ public class MetaService {
         };
     }
 
+        private List<Pixel> getPixels(String accountId, String accessToken) {
+        String pixelUrl = META_URL
+                + "/v22.0/"
+                + Objects.requireNonNull(accountId)
+                + "/adspixels";
+
+        String pixelQueryParameters = "&fields=id,name,creation_time"
+                + "&limit=1000";
+
+        return getResource(
+                accountId,
+                pixelUrl,
+                pixelQueryParameters,
+                accessToken,
+                Pixel.class
+        );
+    }
+
     private List<Campaign> getCampaigns(ExcelRowDto excelRowDto, String accountId, String accessToken) {
         String campaignUrl = META_URL
                 + "/v22.0/"
@@ -266,7 +301,7 @@ public class MetaService {
                 + Objects.requireNonNull(accountId)
                 + "/adsets";
 
-        String setQueryParameters = "&fields=id,name,optimization_goal,billing_event,bid_amount,campaign_id,targeting,status,start_time"
+        String setQueryParameters = "&fields=id,name,optimization_goal,billing_event,bid_amount,campaign_id,targeting,status,start_time,promoted_object"
                 + "&limit=1000";
 
         return getOrCreateResource(
@@ -329,6 +364,28 @@ public class MetaService {
                         throw new RuntimeException(e);
                     }
                 },
+                itemType
+        );
+    }
+
+    private <T> List<T> getResource(
+            String accountId,
+            String baseUrl,
+            String queryParameters,
+            String accessToken,
+            Class<T> itemType
+    ) {
+        String identifier = accountId + ":" + itemType.getSimpleName();
+        String getUrl = baseUrl + "?access_token=" + accessToken
+                + queryParameters;
+
+        return apiCacheService.getOrFetch(
+                identifier,
+                () -> retrieveItems(
+                        getUrl,
+                        itemType
+                ),
+                t -> true,
                 itemType
         );
     }
