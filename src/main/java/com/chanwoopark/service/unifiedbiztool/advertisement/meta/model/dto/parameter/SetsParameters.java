@@ -1,5 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.parameter;
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.PromotedObject;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Targeting;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
@@ -42,43 +43,51 @@ public class SetsParameters {
 
     private String startTime;
 
-    @Builder
-    @Getter
-    public static class PromotedObject {
+    @Setter
+    private PromotedObject promotedObject;
 
-        private String pixel_id;
 
-        private MetaCustomEventType metaCustomEventType;
-
-    }
 
     public static Consumer<BodyInserters.FormInserter<String>> toForm(SetsParameters param, ObjectMapper objectMapper) {
         return form -> {
-                form.with("name", param.getName())
+            form.with("name", param.getName())
                     .with("optimization_goal", param.getOptimizationGoal().name())
                     .with("billing_event", param.getBillingEvent().name())
                     .with("bid_amount", String.valueOf(param.getBidAmount()))
                     .with("campaign_id", param.getCampaignId())
                     .with("status", param.getStatus().name())
-                    .with("access_token", param.getAccessToken());
+                    .with("access_token", param.getAccessToken())
+                    .with("start_time", param.getStartTime());
 
-                if (param.getDailyBudget() != null) {
-                    form.with("daily_budget", String.valueOf(param.getDailyBudget()));
+            if (param.getDailyBudget() != null) {
+                form.with("daily_budget", String.valueOf(param.getDailyBudget()));
+            }
+
+            if (param.getPromotedObject() != null) {
+                try {
+                    String promotedObjectJson = objectMapper.writeValueAsString(param.getPromotedObject());
+                    form.with("promoted_object", promotedObjectJson);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("Failed to serialize targeting", e);
                 }
+            }
 
+            if (param.getTargeting() != null) {
                 try {
                     String targetingJson = objectMapper.writeValueAsString(param.getTargeting());
                     form.with("targeting", targetingJson);
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException("Failed to serialize targeting", e);
+                }
             }
+
         };
     }
 
     public static SetsParameters fromExcel(ExcelRowDto excelRowDto, String accessToken) {
         ZonedDateTime zonedDateTime = ZonedDateTime.of(excelRowDto.getStartDate(), excelRowDto.getStartTime(), ZoneId.of("Asia/Seoul"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
+        String formattedStartTime = zonedDateTime.format(formatter);
         SetsParameters parameters = SetsParameters.builder()
                 .name(excelRowDto.getSetName())
                 .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
@@ -87,7 +96,7 @@ public class SetsParameters {
                 .campaignId(excelRowDto.getFirstCampaignId())
                 .status(MetaAdStatus.PAUSED)
                 .accessToken(accessToken)
-                .startTime(zonedDateTime.format(formatter))
+                .startTime(formattedStartTime)
                 .targeting(
                         Targeting.builder()
                                 .geoLocations(
@@ -100,8 +109,6 @@ public class SetsParameters {
                                 .build()
                 )
                 .build();
-
-
         if (excelRowDto.getMinAge() != null && (excelRowDto.getMaxAge() != null && isInteger(excelRowDto.getMaxAge()))) {
             parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
             parameters.getTargeting().setAgeMax(excelRowDto.getMaxAge());
@@ -115,6 +122,16 @@ public class SetsParameters {
         if (excelRowDto.getMetaCampaignType() == MetaCampaignType.ABO) {
             parameters.setDailyBudget(excelRowDto.getBudget());
         }
+
+        if (!excelRowDto.getPixelList().isEmpty()) {
+            parameters.setPromotedObject(
+                    PromotedObject.builder()
+                            .pixelId(excelRowDto.getFirstPixelId())
+                            .metaCustomEventType(MetaCustomEventType.PURCHASE)
+                            .build()
+            );
+        }
+
         return parameters;
     }
 
