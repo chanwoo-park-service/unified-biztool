@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<th:block th:fragment="ScriptFragment">
+    <!-- ========= All Javascript files linkup ======== -->
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/Chart.min.js}"></script>
+    <script th:src="@{/js/dynamic-pie-chart.js}"></script>
+    <script th:src="@{/js/moment.min.js}"></script>
+    <script th:src="@{/js/fullcalendar.js}"></script>
+    <script th:src="@{/js/jvectormap.min.js}"></script>
+    <script th:src="@{/js/world-merc.js}"></script>
+    <script th:src="@{/js/polyfill.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/ag-grid-community.min.js}"></script>
+</th:block>
+</body>
+
+</html>

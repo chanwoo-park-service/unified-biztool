@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Favicon and Common CSS (Config Fragment) -->
+  <th:block th:replace="~{common/fragment/config :: ConfigFragment}"></th:block>
+
+  <!-- Page Specific Title (using layout dialect) -->
+  <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">PlainAdmin</title>
+</head>
+
+<body>
+<!-- ======== Preloader =========== -->
+<th:block th:replace="~{common/fragment/preloader :: PreloaderFragment}"></th:block>
+<!-- ======== Preloader =========== -->
+
+<!-- ======== sidebar-nav start =========== -->
+<th:block th:replace="~{common/fragment/sidebar :: SidebarFragment}"></th:block>
+<div class="overlay"></div>
+<!-- ======== sidebar-nav end =========== -->
+
+<!-- ======== main-wrapper start =========== -->
+<main class="main-wrapper">
+  <!-- ========== header start ========== -->
+  <th:block th:replace="~{common/fragment/header :: HeaderFragment}"></th:block>
+  <!-- ========== header end ========== -->
+
+  <!-- ========== page specific content start ========== -->
+  <section class="section">
+    <div class="container-fluid">
+      <!-- Content Fragment will be inserted here -->
+      <div layout:fragment="content">
+        <p>Page content goes here</p>
+      </div>
+    </div>
+    <!-- end container -->
+  </section>
+  <!-- ========== page specific content end ========== -->
+
+  <!-- ========== footer start =========== -->
+  <th:block th:replace="~{common/fragment/footer :: FooterFragment}"></th:block>
+  <!-- ========== footer end =========== -->
+</main>
+<!-- ======== main-wrapper end =========== -->
+
+<!-- ========= Common Javascript files ======== -->
+<th:block th:replace="~{common/fragment/scripts :: ScriptFragment}"></th:block>
+
+<!-- ========= Page Specific Javascript files ======== -->
+<th:block layout:fragment="script"></th:block>
+
+</body>
+
+</html>
