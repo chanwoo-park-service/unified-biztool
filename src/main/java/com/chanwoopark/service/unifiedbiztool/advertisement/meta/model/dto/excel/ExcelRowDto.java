@@ -4,7 +4,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.A
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Campaign;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Page;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Set;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.CampaignObjective;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignObjective;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCampaignType;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
 import lombok.Builder;
@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @Getter
 public class ExcelRowDto {
-    private CampaignObjective campaignObjective;
+    private MetaCampaignObjective metaCampaignObjective;
     private String adAccountName;
     private MetaCampaignType metaCampaignType;
     @Setter
@@ -40,9 +40,9 @@ public class ExcelRowDto {
 
     private String gender;
 
-    private long minAge;
+    private Integer minAge;
 
-    private long maxAge;
+    private String maxAge;
 
     private String setName;
     @Setter
@@ -76,9 +76,12 @@ public class ExcelRowDto {
     private String isShortUrlCreate;
     private String shortUrl;
 
+    @Setter
+    private String errorMessage;
+
     public static ExcelRowDto of(Row row) {
         return ExcelRowDto.builder()
-                .campaignObjective(CampaignObjective.fromDescription(getString(row.getCell(0))))
+                .metaCampaignObjective(MetaCampaignObjective.from(getString(row.getCell(0))))
                 .adAccountName(getString(row.getCell(1)))
                 .metaCampaignType(MetaCampaignType.valueOf(getString(row.getCell(2))))
                 .campaignName(getString(row.getCell(3)))
@@ -88,8 +91,8 @@ public class ExcelRowDto {
                 .location(getString(row.getCell(7)))
                 .language(getString(row.getCell(8)))
                 .gender(getString(row.getCell(9)))
-                .minAge(getLong(row.getCell(10)))
-                .maxAge(getLong(row.getCell(11)))
+                .minAge(getInteger(row.getCell(10)))
+                .maxAge(getString(row.getCell(11)))
                 .setName(getString(row.getCell(12)))
                 .adMaterialName(getString(row.getCell(13)))
                 .uploadPage(getString(row.getCell(14)).replaceAll("\\.0", ""))
@@ -115,8 +118,66 @@ public class ExcelRowDto {
         return adAccountList != null && !adAccountList.isEmpty() ? adAccountList.get(0).getId() : null;
     }
 
+    public List<Integer> getGenders() {
+        return switch (getGender()) {
+            case "남자":
+                yield List.of(1);
+            case "여자":
+                yield List.of(2);
+            case "모든 성별":
+                yield List.of(1, 2);
+            default:
+                throw new IllegalStateException("Unexpected value: " + getGender());
+        };
+    }
+
+    public List<String> getGeoLocation() {
+        return switch (getLocation()) {
+            case "대한민국":
+                yield List.of("KR");
+            case "일본":
+                yield List.of("JP");
+            default:
+                throw new IllegalStateException("Unexpected value: " + getGender());
+        };
+    }
+
+    public List<Integer> getLocales() {
+        return switch (getLanguage()) {
+            case "한국어":
+                yield List.of(3);
+            case "영어":
+                yield List.of(4);
+            default:
+                throw new IllegalStateException("Unexpected value: " + getGender());
+        };
+    }
+
     private static LocalDate parseDate(Cell cell) {
-        return cell.getLocalDateTimeCellValue().toLocalDate();
+        if (cell == null) return null;
+
+        return switch (cell.getCellType()) {
+            case NUMERIC -> {
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    yield cell.getLocalDateTimeCellValue().toLocalDate();
+                } else {
+                    double raw = cell.getNumericCellValue();
+                    String rawStr = String.format("%06d", (int) raw); // "250422"
+                    int year = 2000 + Integer.parseInt(rawStr.substring(0, 2));
+                    int month = Integer.parseInt(rawStr.substring(2, 4));
+                    int day = Integer.parseInt(rawStr.substring(4, 6));
+                    yield LocalDate.of(year, month, day);
+                }
+            }
+            case STRING -> {
+                try {
+                    yield LocalDate.parse(cell.getStringCellValue().trim());
+                } catch (Exception e) {
+                    yield null;
+                }
+            }
+            default -> null;
+        };
     }
 
     private static LocalTime parseTime(Cell cell) {
@@ -204,6 +265,40 @@ public class ExcelRowDto {
                         case STRING -> {
                             try {
                                 yield Long.parseLong(cellValue.getStringValue().replace(",", "").trim());
+                            } catch (NumberFormatException e) {
+                                yield null;
+                            }
+                        }
+                        default -> null;
+                    };
+                } catch (Exception e) {
+                    yield null;
+                }
+            }
+            default -> null;
+        };
+    }
+
+    private static Integer getInteger(Cell cell) {
+        if (cell == null) return null;
+        return switch (cell.getCellType()) {
+            case NUMERIC -> (int) cell.getNumericCellValue();
+            case STRING -> {
+                try {
+                    yield Integer.parseInt(cell.getStringCellValue().replace(",", "").trim());
+                } catch (NumberFormatException e) {
+                    yield null;
+                }
+            }
+            case FORMULA -> {
+                try {
+                    FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(cell);
+                    yield switch (cellValue.getCellType()) {
+                        case NUMERIC -> (int) cellValue.getNumberValue();
+                        case STRING -> {
+                            try {
+                                yield Integer.parseInt(cellValue.getStringValue().replace(",", "").trim());
                             } catch (NumberFormatException e) {
                                 yield null;
                             }
