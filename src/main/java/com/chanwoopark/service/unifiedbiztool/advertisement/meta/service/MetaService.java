@@ -149,17 +149,40 @@ public class MetaService {
         );
         excelRowDto.setAdAccountList(accountList);
         if (accountList.size() != 1) {
+            excelRowDto.setErrorMessage(
+                    "해당 이름을 가진 광고 계정이 "
+                            + accountList.size()
+                            + "개입니다. 광고 계정은 반드시 1개로 특정되어야만 합니다.");
             return ExcelResponse.of(excelRowDto);
         }
-
         String accountId = excelRowDto.getFirstAccountId();
         excelRowDto.setAccountResolved(excelRowDto.getAdAccountList() != null && excelRowDto.getAdAccountList().size() == 1);
 
-        List<Campaign> campaignList = getCampaigns(excelRowDto, accountId, accessToken);
+        List<Campaign> campaignList;
+        try {
+            campaignList = getCampaigns(excelRowDto, accountId, accessToken);
+        } catch (Exception ex) {
+            excelRowDto.setErrorMessage(
+                    ("진행중 오류가 발생했습니다. 예외명 : "
+                            + ex.getClass().getSimpleName()
+                            + ", 메세지 : " + ex.getMessage())
+            );
+            return ExcelResponse.of(excelRowDto);
+        }
         excelRowDto.setCampaignList(campaignList);
         excelRowDto.setCampaignResolved(excelRowDto.getCampaignList() != null && excelRowDto.getCampaignList().size() == 1);
 
-        List<Set> setList = getSets(excelRowDto, accountId, accessToken);
+        List<Set> setList;
+        try {
+            setList = getSets(excelRowDto, accountId, accessToken);
+        } catch (Exception ex) {
+            excelRowDto.setErrorMessage(
+                    "진행중 오류가 발생했습니다. 예외명 : "
+                            + ex.getClass().getSimpleName()
+                            + ", 메세지 : " + ex.getMessage()
+            );
+            return ExcelResponse.of(excelRowDto);
+        }
         excelRowDto.setSetList(setList);
         excelRowDto.setSetResolved(excelRowDto.getSetList() != null && excelRowDto.getSetList().size() == 1);
 
@@ -169,13 +192,25 @@ public class MetaService {
                 + "&fields=link,picture,name,id"
                 + "&limit=1000";
 
-        List<Page> pageList = getResource(
-                pageUrl,
-                Page.class,
-                Page::getId,
-                excelRowDto.getUploadPage(),
-                accountId
-        );
+        List<Page> pageList;
+
+        try {
+            pageList = getResource(
+                    pageUrl,
+                    Page.class,
+                    Page::getId,
+                    excelRowDto.getUploadPage(),
+                    accountId
+            );
+        } catch (Exception ex) {
+            excelRowDto.setErrorMessage(
+                    "진행중 오류가 발생했습니다. 예외명 : "
+                            + ex.getClass().getSimpleName()
+                            + ", 메세지 : " + ex.getMessage()
+            );
+            return ExcelResponse.of(excelRowDto);
+        }
+
         excelRowDto.setUploadPageList(pageList);
         excelRowDto.setPageResolved(excelRowDto.getUploadPageList() != null && excelRowDto.getUploadPageList().size() == 1);
         return ExcelResponse.of(excelRowDto);
@@ -208,7 +243,7 @@ public class MetaService {
                 + Objects.requireNonNull(accountId)
                 + "/campaigns";
 
-        String campaignQueryParameters = "&fields=id,name,status,objective,effective_status,start_time"
+        String campaignQueryParameters = "&fields=id,name,objective,status,special_ad_categories,start_time,daily_budget"
                 + "&limit=1000";
 
         return getOrCreateResource(
@@ -231,7 +266,7 @@ public class MetaService {
                 + Objects.requireNonNull(accountId)
                 + "/adsets";
 
-        String setQueryParameters = "&fields=id,name,status,effective_status,start_time"
+        String setQueryParameters = "&fields=id,name,optimization_goal,billing_event,bid_amount,campaign_id,targeting,status,start_time"
                 + "&limit=1000";
 
         return getOrCreateResource(
