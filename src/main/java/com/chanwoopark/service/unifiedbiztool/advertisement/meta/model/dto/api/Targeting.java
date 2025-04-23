@@ -27,6 +27,18 @@ public class Targeting {
     @JsonProperty("locales")
     private List<Integer> locales;
 
+    @JsonProperty("targeting_automation")
+    private TargetingAutomation targetingAutomation;
+
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    @Builder
+    @Getter
+    public static class TargetingAutomation {
+        @JsonProperty("advantage_audience")
+        private int advantageAudience;
+    }
+
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
     @Getter
