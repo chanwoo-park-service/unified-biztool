@@ -1,15 +1,18 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.parameter;
 
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Targeting;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import java.util.List;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 @Builder
@@ -24,28 +27,20 @@ public class SetsParameters {
 
     private Long bidAmount;
 
+    @Setter
     private Long dailyBudget;
 
     private String campaignId;
 
+    @Setter
+    @Getter
     private Targeting targeting;
 
     private MetaAdStatus status;
 
     private String accessToken;
 
-    @Builder
-    @Getter
-    public static class Targeting {
-        @JsonProperty("geo_locations")
-        private GeoLocations geoLocations;
-
-        @Getter
-        @Builder
-        public static class GeoLocations {
-            private List<String> countries;
-        }
-    }
+    private String startTime;
 
     @Builder
     @Getter
@@ -63,10 +58,14 @@ public class SetsParameters {
                     .with("optimization_goal", param.getOptimizationGoal().name())
                     .with("billing_event", param.getBillingEvent().name())
                     .with("bid_amount", String.valueOf(param.getBidAmount()))
-                    .with("daily_budget", String.valueOf(param.getDailyBudget()))
                     .with("campaign_id", param.getCampaignId())
                     .with("status", param.getStatus().name())
                     .with("access_token", param.getAccessToken());
+
+                if (param.getDailyBudget() != null) {
+                    form.with("daily_budget", String.valueOf(param.getDailyBudget()));
+                }
+
                 try {
                     String targetingJson = objectMapper.writeValueAsString(param.getTargeting());
                     form.with("targeting", targetingJson);
@@ -77,24 +76,56 @@ public class SetsParameters {
     }
 
     public static SetsParameters fromExcel(ExcelRowDto excelRowDto, String accessToken) {
-        return SetsParameters.builder()
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(excelRowDto.getStartDate(), excelRowDto.getStartTime(), ZoneId.of("Asia/Seoul"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
+        SetsParameters parameters = SetsParameters.builder()
                 .name(excelRowDto.getSetName())
-                .optimizationGoal(MetaOptimizationGoal.REACH)
-                .billingEvent(MetaBillingEvent.IMPRESSIONS)
+                .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
+                .billingEvent(MetaBillingEvent.LINK_CLICKS)
                 .bidAmount(1500L)
-                .dailyBudget(excelRowDto.getBudget())
                 .campaignId(excelRowDto.getFirstCampaignId())
                 .status(MetaAdStatus.PAUSED)
                 .accessToken(accessToken)
+                .startTime(zonedDateTime.format(formatter))
                 .targeting(
-                        SetsParameters.Targeting.builder()
+                        Targeting.builder()
                                 .geoLocations(
-                                        SetsParameters.Targeting.GeoLocations.builder()
-                                                .countries(List.of("KR"))
+                                        Targeting.GeoLocations.builder()
+                                                .countries(excelRowDto.getGeoLocation())
                                                 .build()
                                 )
+                                .genders(excelRowDto.getGenders())
+                                .locales(excelRowDto.getLocales())
                                 .build()
                 )
                 .build();
+
+
+        if (excelRowDto.getMinAge() != null && (excelRowDto.getMaxAge() != null && isInteger(excelRowDto.getMaxAge()))) {
+            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
+            parameters.getTargeting().setAgeMax(excelRowDto.getMaxAge());
+
+        } else if (excelRowDto.getMinAge() != null && (excelRowDto.getMaxAge() != null && excelRowDto.getMaxAge().equals("+"))) {
+            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
+        } else if (excelRowDto.getMinAge() != null) {
+            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
+        }
+
+        if (excelRowDto.getMetaCampaignType() == MetaCampaignType.ABO) {
+            parameters.setDailyBudget(excelRowDto.getBudget());
+        }
+        return parameters;
     }
+
+    public static boolean isInteger(String str) {
+        if (str == null || str.isBlank()) return false;
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 }
