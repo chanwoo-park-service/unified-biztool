@@ -4,6 +4,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.function.Consumer;
@@ -23,14 +24,23 @@ public class CampaignsParameters {
 
     private MetaSpecialAdCategory specialAdCategory;
 
+    @Setter
+    private Long budget;
+
     public static CampaignsParameters fromExcel(ExcelRowDto excelRowDto, String accessToken) {
-        return CampaignsParameters.builder()
+        CampaignsParameters parameters = CampaignsParameters.builder()
                 .name(excelRowDto.getCampaignName())
-                .objective(MetaCampaignObjective.OUTCOME_SALES)
+                .objective(excelRowDto.getMetaCampaignObjective())
                 .status(MetaAdStatus.PAUSED)
                 .accessToken(accessToken)
                 .specialAdCategory(MetaSpecialAdCategory.NONE)
                 .build();
+
+        if (excelRowDto.getMetaCampaignType() == MetaCampaignType.CBO || excelRowDto.getMetaCampaignType() == MetaCampaignType.ASC) {
+            parameters.setBudget(excelRowDto.getBudget());
+        }
+
+        return parameters;
     }
 
     public static Consumer<BodyInserters.FormInserter<String>> toForm(CampaignsParameters param) {
@@ -40,6 +50,9 @@ public class CampaignsParameters {
                     .with("status", param.getStatus().name())
                     .with("access_token", param.getAccessToken())
                     .with("special_ad_categories", param.getSpecialAdCategory().name());
+            if (param.getBudget() != null && param.getBudget() != 0L) {
+                form.with("daily_budget", String.valueOf(param.getBudget()));
+            }
         };
     }
 }
