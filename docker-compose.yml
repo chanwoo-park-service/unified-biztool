@@ -1,20 +1,15 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.3.0
+  redis:
+    image: redis:7.2
     container_name: unified-biztool-db
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: unified-biztool
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      TZ: Asia/Seoul
     ports:
-      - "3306:3306"
+      - "6379:6379"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - redis-data:/data
     restart: unless-stopped
 
 volumes:
   mysql-data:
+  redis-data:
