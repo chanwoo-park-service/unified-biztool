@@ -13,4 +13,6 @@ public class AdResponse {
 
     private Long index;
     private List<UploadResult> uploadResults;
+    private String adsId;
+    private String errorMessage;
 }
