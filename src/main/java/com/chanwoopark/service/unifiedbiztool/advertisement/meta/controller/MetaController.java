@@ -11,6 +11,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.validation.Meta
 import com.chanwoopark.service.unifiedbiztool.common.exception.TokenNotFoundException;
 import com.chanwoopark.service.unifiedbiztool.common.model.dto.Response;
 import com.chanwoopark.service.unifiedbiztool.common.model.dto.TokenRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -54,7 +55,7 @@ public class MetaController {
             @RequestPart("request") @Valid AdRequest adRequest,
             @RequestPart(name = "files", required = false) List<MultipartFile> files,
             @RequestPart(name = "thumbnails", required = false) List<MultipartFile> thumbnails
-    ) {
+    ) throws JsonProcessingException {
         metaValidator.validateCreativeFormat(
                 adRequest,
                 files,

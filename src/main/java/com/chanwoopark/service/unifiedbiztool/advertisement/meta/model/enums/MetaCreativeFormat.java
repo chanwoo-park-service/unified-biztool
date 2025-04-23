@@ -4,6 +4,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 @Getter
 public enum MetaCreativeFormat {
     DYNAMIC("다이내믹"),
@@ -17,11 +20,19 @@ public enum MetaCreativeFormat {
         this.description = description;
     }
 
+    @JsonValue
+    public String getDescription() {
+        return description;
+    }
+
+    @JsonCreator
     public static MetaCreativeFormat fromDescription(String description) {
+        if (description == null) {
+            return null;
+        }
         return Arrays.stream(values())
                 .filter(format -> format.getDescription().equals(description))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid creative format description: " + description));
     }
-
 }

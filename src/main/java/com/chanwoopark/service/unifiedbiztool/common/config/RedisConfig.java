@@ -127,9 +127,8 @@ public class RedisConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-        log.info("redis://" + host + ":" + port);
         config.useSingleServer()
-                .setAddress( host + ":" + port)
+                .setAddress("redis://" + host + ":" + port)
                 .setConnectionMinimumIdleSize(1)
                 .setConnectionPoolSize(2)
                 .setRetryAttempts(3)

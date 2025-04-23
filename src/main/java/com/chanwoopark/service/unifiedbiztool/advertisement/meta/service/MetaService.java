@@ -17,6 +17,7 @@ import com.chanwoopark.service.unifiedbiztool.common.model.enums.Platform;
 import com.chanwoopark.service.unifiedbiztool.common.service.PlatformTokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -438,7 +439,7 @@ public class MetaService {
         }
     }
 
-    public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files, List<MultipartFile> thumbnails) {
+    public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files, List<MultipartFile> thumbnails) throws JsonProcessingException {
         String accessToken = platformTokenService.getToken(Platform.META);
         List<CompletableFuture<UploadResult>> futureResults = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
@@ -457,30 +458,97 @@ public class MetaService {
                 .map(CompletableFuture::join)
                 .toList();
 
-        if (uploadResults.get(0) instanceof ImageUploadResult) {
+        String creativeId;
 
+        try {
+            creativeId = uploadCreative(
+                    uploadResults,
+                    adRequest,
+                    accessToken
+            );
+        } catch (Exception ex) {
+            return AdResponse.builder()
+                    .index(adRequest.getIndex())
+                    .uploadResults(uploadResults)
+                    .errorMessage(
+                            "진행중 오류가 발생했습니다. 예외명 : "
+                                    + ex.getClass().getSimpleName()
+                                    + ", 메세지 : " + ex.getMessage()
+                    )
+                    .build();
         }
 
+        String setUpdateUrl = META_URL + "/v22.0/" + adRequest.getSetId();
+
+        try {
+            httpClientHelper.postFormIgnoreFail(
+                    setUpdateUrl,
+                    SetsParameters.toForm(
+                            SetsParameters.fromAdRequest(adRequest, accessToken),
+                            objectMapper
+                    )
+            );
+        } catch (Exception ex) {
+            return AdResponse.builder()
+                    .index(adRequest.getIndex())
+                    .uploadResults(uploadResults)
+                    .errorMessage(
+                            "진행중 오류가 발생했습니다. 예외명 : "
+                            + ex.getClass().getSimpleName()
+                            + ", 메세지 : " + ex.getMessage()
+                    )
+                    .build();
+        }
+
+        String adsUrl = META_URL
+                + "/v22.0/"
+                + adRequest.getAdAccountId()
+                + "/ads";
+
+        String adsResponse = httpClientHelper.postForm(
+                adsUrl,
+                form -> {
+                    try {
+                        form
+                                .with("name", adRequest.getTitle())
+                                .with("adset_id", adRequest.getSetId())
+                                .with("creative", objectMapper.writeValueAsString(Map.of(
+                                        "creative_id", creativeId
+                                                )
+                                        )
+                                )
+                                .with("status", String.valueOf(MetaAdStatus.PAUSED))
+                                .with("access_token", accessToken);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        JsonNode root = objectMapper.readTree(adsResponse);
+        String adsId = root.path("id").asText();
+
         return AdResponse.builder()
+                .index(adRequest.getIndex())
                 .uploadResults(uploadResults)
+                .adsId(adsId)
                 .build();
     }
 
-    private String uploadCreative(List<UploadResult> uploadResults, AdRequest adRequest, String accessToken) {
+    private String uploadCreative(List<UploadResult> uploadResults, AdRequest adRequest, String accessToken) throws JsonProcessingException {
         MetaCreativeFormat metaCreativeFormat = adRequest.getMetaCreativeFormat();
-        String creativeId = "";
+        String creativeResponse = "";
         switch (metaCreativeFormat) {
             case DYNAMIC,COLLECTION:
                 break;
             case SINGLE:
-                creativeId = handleSingle(uploadResults, adRequest, accessToken);
+                creativeResponse = handleSingle(uploadResults, adRequest, accessToken);
                 break;
             case SLIDESHOW:
-                creativeId = handleSlideshow(uploadResults, adRequest, accessToken);
+                creativeResponse = handleSlideshow(uploadResults, adRequest, accessToken);
                 break;
         }
 
-        return creativeId;
+        JsonNode root = objectMapper.readTree(creativeResponse);
+        return root.path("id").asText();
     }
 
     private String handleSingle(List<UploadResult> uploadResults, AdRequest adRequest, String accessToken) {
@@ -488,7 +556,7 @@ public class MetaService {
         String url = META_URL
                 + "v22.0/"
                 + adRequest.getAdAccountId()
-                + "/adcreatives";
+                    + "/adcreatives";
 
             return httpClientHelper.postForm(url, form -> {
                 form
@@ -526,50 +594,48 @@ public class MetaService {
     }
 
     private String handleSlideshow(List<UploadResult> uploadResults, AdRequest adRequest, String accessToken) {
-        UploadResult uploadResult = uploadResults.get(0);
         String url = META_URL
-                + "v22.0/"
+                + "/v22.0/"
                 + adRequest.getAdAccountId()
                 + "/adcreatives";
-        return "";
-//        return httpClientHelper.postForm(url, form -> {
-//                form
-//                        .with("name", adRequest.getAdName())
-//                        .with("access_token", accessToken);
-//
-//            if (uploadResult instanceof VideoUploadResult) {
-//                try {
-//                    form.with("object_story_spec", objectMapper.writeValueAsString(Map.of(
-//                            "page_id", adRequest.getPageId(),
-//                            "link_data", Map.of(
-//                                    "slideshow_spec", Map.of(
-//                                            "images_urls", List.of(
-//                                                   uploadResults.stream()
-//                                                           .filter(ur -> ur instanceof VideoUploadResult)
-//                                                           .map(ur -> ((VideoUploadResult) ur).getVideoId())
-//                                                           .collect(Collectors.toList())
-//                                            )
-//                                    ),
-//                                    "link", adRequest.getLandingUrl()
-//                            )
-//                    )));
-//                } catch (JsonProcessingException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            } else if (uploadResult instanceof ImageUploadResult) {
-//                try {
-//                    form.with("object_story_spec", objectMapper.writeValueAsString(Map.of(
-//                            "page_id", adRequest.getPageId(),
-//                            "link_data", Map.of(
-//                                    "image_hash", image.getImageHash(),
-//                                    "link", adRequest.getLandingUrl()
-//                            )
-//                    )));
-//                } catch (JsonProcessingException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        });
+        return httpClientHelper.postForm(url, form -> {
+            form.with("name", adRequest.getAdMaterialName())
+                    .with("access_token", accessToken);
+            List<Map<String, Object>> childAttachments = new ArrayList<>();
+            for (UploadResult result : uploadResults) {
+                Map<String, Object> attachment = getAttachment(adRequest, (ImageUploadResult) result);
+                childAttachments.add(attachment);
+            }
+
+            Map<String, Object> objectStorySpec = new HashMap<>();
+
+            Map<String, Object> linkData = new HashMap<>();
+            linkData.put("child_attachments", childAttachments);
+            linkData.put("link", adRequest.getLandingUrl());
+
+            objectStorySpec.put("link_data", linkData);
+            objectStorySpec.put("page_id", adRequest.getPageId());
+
+            try {
+                form.with("object_story_spec", objectMapper.writeValueAsString(objectStorySpec));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+    }
+
+    private static Map<String, Object> getAttachment(AdRequest adRequest, ImageUploadResult result) {
+        Map<String, Object> attachment = new HashMap<>();
+        attachment.put("description", adRequest.getDescription());
+
+        if (result.getImageHash() != null) {
+            attachment.put("image_hash", result.getImageHash());
+        }
+
+        attachment.put("link", adRequest.getLandingUrl());
+        attachment.put("name", adRequest.getDisplayUrl());
+        return attachment;
     }
 
     public List<MetaAccountResponse> getAccounts() {

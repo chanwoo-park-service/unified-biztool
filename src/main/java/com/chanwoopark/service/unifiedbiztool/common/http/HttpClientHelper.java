@@ -9,8 +9,10 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -112,6 +114,28 @@ public class HttpClientHelper {
                     }
                     return response.bodyToMono(String.class);
                 })
+                .block();
+    }
+
+    public String delete(String url, Map<String, String> params) {
+        log.info("DELETE {}", url);
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        params.forEach(builder::queryParam);
+
+        return webClient.delete()
+                .uri(builder.build().toUriString())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .flatMap(errorBody -> {
+                                    log.warn("DELETE 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
+                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "DELETE : " + errorBody.replace("\"", "")));
+                                })
+                )
+                .bodyToMono(String.class)
                 .block();
     }
 
