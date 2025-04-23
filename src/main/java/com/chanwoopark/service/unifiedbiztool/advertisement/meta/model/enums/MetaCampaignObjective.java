@@ -1,36 +1,19 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Getter
 public enum MetaCampaignObjective {
-    APP_INSTALLS,
-    BRAND_AWARENESS,
-    EVENT_RESPONSES,
-    LEAD_GENERATION,
-    LINK_CLICKS,
-    LOCAL_AWARENESS,
-    MESSAGES,
-    OFFER_CLAIMS,
-    PAGE_LIKES,
-    POST_ENGAGEMENT,
-    PRODUCT_CATALOG_SALES,
-    REACH,
-    STORE_VISITS,
-    VIDEO_VIEWS,
+    OUTCOME_SALES("판매"),
+    OUTCOME_TRAFFIC("트래픽");
 
-    OUTCOME_AWARENESS,
-    OUTCOME_ENGAGEMENT,
-    OUTCOME_LEADS,
-    OUTCOME_SALES,
-    OUTCOME_TRAFFIC,
-    OUTCOME_APP_PROMOTION,
-
-    CONVERSIONS;
+    private final String description;
 
     public static MetaCampaignObjective from(String raw) {
         for (MetaCampaignObjective objective : values()) {
-            if (objective.name().equalsIgnoreCase(raw)) {
+            if (objective.getDescription().equalsIgnoreCase(raw.trim())) {
                 return objective;
             }
         }
