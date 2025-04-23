@@ -3,6 +3,7 @@ package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.para
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.PromotedObject;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Targeting;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.AdRequest;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.utils.MetaParameterParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -98,27 +99,9 @@ public class SetsParameters {
                 .status(MetaAdStatus.PAUSED)
                 .accessToken(accessToken)
                 .startTime(formattedStartTime)
-                .targeting(
-                        Targeting.builder()
-                                .geoLocations(
-                                        Targeting.GeoLocations.builder()
-                                                .countries(MetaParameterParser.getGeoLocation(excelRowDto.getLocation()))
-                                                .build()
-                                )
-                                .genders(MetaParameterParser.getGenders(excelRowDto.getGender()))
-                                .locales(MetaParameterParser.getLocales(excelRowDto.getLanguage()))
-                                .build()
-                )
-                .build();
-        if (excelRowDto.getMinAge() != null && (excelRowDto.getMaxAge() != null && isInteger(excelRowDto.getMaxAge()))) {
-            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
-            parameters.getTargeting().setAgeMax(excelRowDto.getMaxAge());
+                        .build();
 
-        } else if (excelRowDto.getMinAge() != null && (excelRowDto.getMaxAge() != null && excelRowDto.getMaxAge().equals("+"))) {
-            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
-        } else if (excelRowDto.getMinAge() != null) {
-            parameters.getTargeting().setAgeMin(excelRowDto.getMinAge());
-        }
+        setAge(excelRowDto.getMinAge(), excelRowDto.getMaxAge(), parameters);
 
         if (excelRowDto.getMetaCampaignType() == MetaCampaignType.ABO) {
             parameters.setDailyBudget(excelRowDto.getBudget());
@@ -134,6 +117,59 @@ public class SetsParameters {
         }
 
         return parameters;
+    }
+
+    public static SetsParameters fromAdRequest(AdRequest adRequest, String accessToken) {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(adRequest.getStartDate(), adRequest.getStartTime(), ZoneId.of("Asia/Seoul"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+        String formattedStartTime = zonedDateTime.format(formatter);
+        SetsParameters parameters = SetsParameters.builder()
+                .name(adRequest.getSetName())
+                .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
+                .billingEvent(MetaBillingEvent.LINK_CLICKS)
+                .bidAmount(1500L)
+                .campaignId(adRequest.getCampaignId())
+                .status(MetaAdStatus.PAUSED)
+                .accessToken(accessToken)
+                .startTime(formattedStartTime)
+                .targeting(
+                        Targeting.builder()
+                                .geoLocations(
+                                        Targeting.GeoLocations.builder()
+                                                .countries(MetaParameterParser.getGeoLocation(adRequest.getLocation()))
+                                                .build()
+                                )
+                                .genders(MetaParameterParser.getGenders(adRequest.getGender()))
+                                .locales(MetaParameterParser.getLocales(adRequest.getLanguage()))
+                                .build()
+                )
+                .build();
+        setAge(adRequest.getMinAge(), adRequest.getMaxAge(), parameters);
+
+        if (adRequest.getMetaCampaignType() == MetaCampaignType.ABO) {
+            parameters.setDailyBudget(adRequest.getBudget());
+        }
+
+        parameters.setPromotedObject(
+                PromotedObject.builder()
+                        .pixelId(adRequest.getPixelId())
+                        .metaCustomEventType(MetaCustomEventType.PURCHASE)
+                        .build()
+        );
+
+        return parameters;
+    }
+
+    private static void setAge(Integer minAge, String maxAge, SetsParameters parameters) {
+        if (minAge != null && (isInteger(maxAge))) {
+            parameters.getTargeting().setAgeMin(minAge);
+            parameters.getTargeting().setAgeMax(maxAge);
+
+        } else if (minAge != null && (maxAge != null && maxAge.equals("+"))) {
+            parameters.getTargeting().setAgeMin(minAge);
+        } else if (minAge != null) {
+            parameters.getTargeting().setAgeMin(minAge);
+        }
     }
 
     public static boolean isInteger(String str) {
