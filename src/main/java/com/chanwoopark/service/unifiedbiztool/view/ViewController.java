@@ -15,11 +15,16 @@ public class ViewController {
 
     @GetMapping("/token-page")
     public ModelAndView tokenPage() {
-        return new ModelAndView("tokenPage");
+        return new ModelAndView("settings");
     }
 
     @GetMapping("/upload-page")
     public ModelAndView uploadPage() {
-        return new ModelAndView("uploadPage");
+        return new ModelAndView("upload-page");
+    }
+
+    @GetMapping("/signin")
+    public ModelAndView signin() {
+        return new ModelAndView("signin");
     }
 }
