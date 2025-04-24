@@ -21,7 +21,7 @@
 
             <div class="menu-toggle-btn mr-15">
               <button type="button" id="uploadButton" >Upload</button>
-              <input type="file" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
+              <input type="file" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
             </div>
 
       </form>
@@ -342,14 +342,19 @@
 
     const formData = new FormData(); // FormData 객체 생성
     formData.append('file', selectedFile); // 선택된 파일을 FormData에 추가
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
 
+    let headerValues =  {}
+
+    if (csrfHeader && csrfToken) {
+      headerValues[csrfHeader] = csrfToken;
+    }
     // AJAX를 이용하여 서버로 파일 전송
-    fetch('http://localhost:8080/api/meta/upload', {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    fetch('/api/meta/upload', {
+      headers: headerValues,
       method: 'POST',
-      body: formData,
+      body: formData
     })
             .then(response => response.json())
             .then(data => {
