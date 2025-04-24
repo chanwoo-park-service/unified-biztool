@@ -13,7 +13,7 @@
     <div class="row align-items-center">
       <div class="col-md-6">
         <div class="title">
-          <h2>META 엑셀업로드</h2>
+          <h2>광고자동화 - META</h2>
         </div>
       </div>
       <!-- end col -->
@@ -23,10 +23,10 @@
             <ol class="breadcrumb">
               <li class="breadcrumb-item">
                 <!-- Thymeleaf URL 사용 (href="#0" -> th:href="@{/index.html} 또는 적절한 경로) -->
-                <a th:href="@{/index.html}">Dashboard</a>
+                <a th:href="@{/index}">대시보드</a>
               </li>
               <li class="breadcrumb-item active" aria-current="page">
-                META 엑셀업로드
+                광고자동화 / Meta
               </li>
             </ol>
           </nav>
@@ -63,7 +63,7 @@
     init() {
       this.eGui = document.createElement("div");
       const eButton = document.createElement("button");
-      eButton.className = "btn-simple";
+      eButton.className = "primary-btn btn-hover simple-btn";
       eButton.textContent = "파일 업로드";
       this.eventListener = () => alert("clicked");// 파일업로드 올리기
       eButton.addEventListener("click", this.eventListener);
