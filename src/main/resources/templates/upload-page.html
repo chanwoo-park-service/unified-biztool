@@ -16,8 +16,26 @@
           <h2>광고자동화 - META</h2>
         </div>
       </div>
+
+      <form enctype="multipart/form-data">
+
+            <div class="menu-toggle-btn mr-15">
+              <button type="button" id="uploadButton" >Upload</button>
+              <input type="file" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
+            </div>
+
+      </form>
+
+
+
+
+
+
+
+
+
       <!-- end col -->
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="breadcrumb-wrapper">
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -86,26 +104,18 @@
   }
 
   const gridOptions = {
-    // Data to be displayed
+
     rowData: [
-      { CAMPAIGN_GOAL: "판매", ADVERTISE_ACCOUNT_NAME: "애니멀 프로젝트", CAMPAIGN_TYPE: 'ASC',
-        CAMPAIGN_NAME: "애니멀 프로젝", BUDGET: "10000000", START_DATE: '2025-04-22',
-        START_TIME: "23:50", LOCATION: "대한민국", LANGUAGE: '한국어',
-        GENDER: "남자", MIN_AGE: "20", MAX_AGE: '60',
-        SET_NAME: "애니멀 세트 23", MATERIAL_NAME: "소재 1", UPLOAD_PAGE_NAME: '540062155846413',
-        LANDING_PAGE_URL: "test",DISPLAY_LINK_URL: "슬라이드", DEFAULT_PHRASE: "test",
-        TITLE: 'tes', DESCRIPTION: "test", MEMO: true
+      { campaignGoal: "판매", advertiseAccountName: "애니멀 프로젝트", campaignType: 'ASC',
+        campaignName: "애니멀 프로젝", budget: "10000000", startDate: '2025-04-22',
+        startTime: "23:50", location: "대한민국", language: '한국어',
+        gender: "남자", minAge: "20", maxAge: '60',
+        setName: "애니멀 세트 23", materialName: "소재 1", uploadPageName: '540062155846413',
+        landingPageUrl: "test",displayLinkUrl: "슬라이드", defaultPhrase: "test",
+        title: 'tes', description: "test", memo: true
         },
-      { CAMPAIGN_GOAL: "판매", ADVERTISE_ACCOUNT_NAME: "애니멀 프로젝트", CAMPAIGN_TYPE: 'ASC',
-        CAMPAIGN_NAME: "애니멀 프로젝", BUDGET: "10000000", START_DATE: '2025-04-22',
-        START_TIME: "23:50", LOCATION: "대한민국", LANGUAGE: '한국어',
-        GENDER: "남자", MIN_AGE: "20", MAX_AGE: '60',
-        SET_NAME: "애니멀 세트 23", MATERIAL_NAME: "소재 1", UPLOAD_PAGE_NAME: '540062155846413',
-        LANDING_PAGE_URL: "test",DISPLAY_LINK_URL: "슬라이드", DEFAULT_PHRASE: "test",
-        TITLE: 'tes', DESCRIPTION: "test", MEMO: true
-      },
     ],
-    // Columns to be displayed (Should match rowData properties)
+
     columnDefs: [
       {
         headerName: "파일 업로드",
@@ -115,153 +125,188 @@
         minWidth: 100
       },
       {
-        headerName: "캠페인 목표",
+        headerName: "캠페인 목표(선택)",
         field: "CAMPAIGN_GOAL",
         editable: true,
         flex: 1,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: [
+            "판매",
+            "트래픽",
+
+          ],
+        },
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "광고 계정명",
-        field: "ADVERTISE_ACCOUNT_NAME",
+        field: "advertiseAccountName",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
-        headerName: "캠페인 형태",
-        field: "CAMPAIGN_TYPE",
+        headerName: "캠페인 형태(선택)",
+        field: "campaignType",
         editable: true,
         flex: 1,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: [
+            "ABO",
+            "ASC",
+            "CBO",
+          ],
+        },
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "캠페인명",
-        field: "CAMPAIGN_NAME",
+        field: "campaignName",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "예산",
-        field: "BUDGET",
+        field: "budget",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "시작날짜",
-        field: "START_DATE",
+        field: "startDate",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "시작 시간",
-        field: "START_TIME",
+        field: "startTime",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "위치",
-        field: "LOCATION",
+        field: "location",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "언어",
-        field: "LANGUAGE",
+        field: "language",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "성별",
-        field: "GENDER",
+        field: "gender",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "최소 연령",
-        field: "MIN_AGE",
+        field: "minAge",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "최대 연령",
-        field: "MAX_AGE",
+        field: "maxAge",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "세트명",
-        field: "SET_NAME",
+        field: "setName",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "광고소재명",
-        field: "MATERIAL_NAME",
+        field: "materialName",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "업로드 페이지명",
-        field: "UPLOAD_PAGE_NAME",
+        field: "uploadPageName",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
+        headerName: "형식(선택)",
+        field: "format",
+        editable: true,
+        flex: 1,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: [
+            "단일 이미지·동영상",
+            "슬라이드",
+
+          ],
+        },
+        minWidth: 150, maxWidth: 300
+      },
+      {
         headerName: "랜딩페이지 URL",
-        field: "LANDING_PAGE_URL",
+        field: "landingPageUrl",
         editable: true,
         flex: 1,
         minWidth: 150, maxWidth: 300
       },
       {
         headerName: "표시링크 URL",
-        field: "DISPLAY_LINK_URL",
+        field: "displayLinkUrl",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "기본 문구",
-        field: "DEFAULT_PHRASE",
+        field: "defaultPhrase",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "제목",
-        field: "TITLE",
+        field: "title",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "설명",
-        field: "DESCRIPTION",
+        field: "description",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
       {
         headerName: "기타 요청사항",
-        field: "MEMO",
+        field: "memo",
         editable: true,
         flex: 1,
         minWidth: 100, maxWidth: 300
       },
     ],
+    rowClassRules: {
+      // apply red to Ford cars
+      "rag-green": (params) => params.data.CAMPAIGN_GOAL === "트래픽",
+    },
     /*rowData: getData(), 이거로 불러서 데이터 뿌려주기*/
     autoSizeStrategy: {
       type: "fitGridWidth",
@@ -277,15 +322,51 @@
   };
 
 
-
-
   document.addEventListener("DOMContentLoaded", function () {
     const gridDiv = document.querySelector("#myGrid");
     gridApi = agGrid.createGrid(gridDiv, gridOptions);
   });
- /* fetch("http://localhost:upload/")
-          .then((response) => response.json())
-          .then((data) => gridApi.setGridOption("rowData", data));*/
+
+
+  const Input = document.getElementById('excelInput');
+  const uploadButton = document.getElementById('uploadButton'); // 업로드 버튼 요소 가져오기
+
+  let selectedFile; // 이미지 선택 시 파일 객체를 저장할 변수
+
+  Input.addEventListener('change', function (event) {
+    selectedFile = event.target.files[0];
+  });
+
+  // 업로드 버튼에 클릭 이벤트 핸들러 등록
+  uploadButton.addEventListener('click', function  excelUpload(callback) {
+
+    const formData = new FormData(); // FormData 객체 생성
+    formData.append('file', selectedFile); // 선택된 파일을 FormData에 추가
+
+    // AJAX를 이용하여 서버로 파일 전송
+    fetch('http://localhost:8080/api/meta/upload', {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      method: 'POST',
+      body: formData,
+    })
+            .then(response => response.json())
+            .then(data => {
+              // 서버로부터 받은 응답을 처리하는 코드
+              console.log(data);
+              callback(data);
+            })
+            .catch(error => {
+              // 에러 처리
+              console.error(error);
+            });
+  });
+  excelUpload( function (data) {
+    gridOptions.rowData = data;
+    gridApi = agGrid.createGrid(gridDiv, gridOptions);
+  });
+
 </script>
 
 </th:block>
