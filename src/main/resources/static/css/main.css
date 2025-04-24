@@ -5955,3 +5955,11 @@ h6,
     transform: rotate(360deg);
   }
 }
+
+/*아래부터 커스텀*/
+.simple-btn {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -25,11 +25,10 @@
                   <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                       <li class="breadcrumb-item">
-                        <a href="#0">Dashboard</a>
+                        <a href="/">대시보드</a>
                       </li>
-                      <li class="breadcrumb-item"><a href="#0">Pages</a></li>
                       <li class="breadcrumb-item active" aria-current="page">
-                        Settings
+                        설정
                       </li>
                     </ol>
                   </nav>
@@ -50,9 +49,10 @@
                 <div class="input-style-1">
                     <label for="meta">토큰</label>
                     <input id="meta" type="text" placeholder="" value="" />
+                    <div id="meta-token-register-status" class="valid-feedback"></div>
                 </div>
                 <div class="col-12 input-style-1">
-                  <button class="main-btn danger-btn btn-hover">
+                  <button class="main-btn danger-btn btn-hover" onclick="registerToken()">
                     토큰 수정
                   </button>
                 </div>
@@ -61,7 +61,7 @@
                   <input id="meat-health" type="text" disabled value="" />
                 </div>
                 <div class="col-12">
-                  <button class="main-btn primary-btn btn-hover">
+                  <button class="main-btn primary-btn btn-hover" onclick="verifyToken()">
                     토큰 상태 확인
                   </button>
                 </div>
@@ -70,10 +70,103 @@
               <!-- end card -->
             </div>
             <!-- end col -->
-          </div>
-          <!-- end row -->
         </div>
+          <!-- end row -->
         <!-- end container -->
+        <script>
+          function registerToken() {
+            const tokenInput = document.getElementById('meta');
+            const statusEl = document.getElementById('meta-token-register-status');
+            const token = tokenInput.value.trim();
+
+            // CSRF 토큰 가져오기
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+            if (!token) {
+              statusEl.textContent = '토큰을 입력해주세요.';
+              statusEl.style.display = 'block';
+              statusEl.style.color = 'var(--bs-danger-text)';
+              return;
+            }
+
+            const requestBody = {
+              accessToken: token
+            };
+
+            statusEl.textContent = '등록 중...';
+            statusEl.style.display = 'block';
+            statusEl.style.color = 'var(--bs-warning-text)';
+
+            const headers = {
+              'Content-Type': 'application/json'
+            };
+
+            // CSRF 헤더 추가
+            if (csrfHeader && csrfToken) {
+              headers[csrfHeader] = csrfToken;
+            }
+
+            fetch('/api/meta/token', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify(requestBody)
+            })
+                    .then(response => {
+                      if (response.status === 200) {
+                        statusEl.textContent = '토큰이 성공적으로 등록되었습니다.';
+                        statusEl.style.color = 'var(--bs-success-text)';
+                      } else {
+                        statusEl.textContent = '토큰 등록에 실패했습니다. 상태 코드: ' + response.status;
+                        statusEl.style.color = 'var(--bs-danger-text)';
+                      }
+                    })
+                    .catch(error => {
+                      console.error('토큰 등록 중 오류 발생:', error);
+                      statusEl.textContent = '토큰 등록 중 오류가 발생했습니다.';
+                      statusEl.style.color = 'var(--bs-danger-text)';
+                    });
+          }
+          function verifyToken() {
+            const healthInput = document.getElementById('meat-health');
+
+            // 초기 상태 설정
+            healthInput.value = '요청 진행 중..';
+            healthInput.style.backgroundColor = '#f8f9fa';
+            healthInput.style.borderColor = '#ced4da';
+
+            fetch('/api/meta/token')
+                    .then(response => {
+                      if (response.status === 200) {
+                        healthInput.value = '정상';
+                        healthInput.style.backgroundColor = 'rgba(209, 231, 221, 0.5)';  // 연한 녹색 배경
+                        healthInput.style.borderColor = '#198754';  // 녹색 테두리
+                      } else if (response.status === 404) {
+                        healthInput.value = '토큰 없음';
+                        healthInput.style.backgroundColor = 'rgba(255, 243, 205, 0.5)';  // 연한 노란색 배경
+                        healthInput.style.borderColor = '#ffc107';  // 노란색 테두리
+                      } else if (response.status === 401) {
+                        healthInput.value = '인증 실패';
+                        healthInput.style.backgroundColor = 'rgba(248, 215, 218, 0.5)';  // 연한 빨간색 배경
+                        healthInput.style.borderColor = '#dc3545';  // 빨간색 테두리
+                      } else if (response.status === 500) {
+                        healthInput.value = '서버 오류';
+                        healthInput.style.backgroundColor = 'rgba(248, 215, 218, 0.5)';  // 연한 빨간색 배경
+                        healthInput.style.borderColor = '#dc3545';  // 빨간색 테두리
+                      } else {
+                        healthInput.value = '알 수 없는 오류';
+                        healthInput.style.backgroundColor = 'rgba(248, 215, 218, 0.5)';  // 연한 빨간색 배경
+                        healthInput.style.borderColor = '#6c757d';  // 회색 테두리
+                      }
+                    })
+                    .catch(error => {
+                      console.error('토큰 검증 중 오류 발생:', error);
+                      healthInput.value = '연결 오류';
+                      healthInput.style.backgroundColor = 'rgba(248, 215, 218, 0.5)';  // 연한 빨간색 배경
+                      healthInput.style.borderColor = '#dc3545';  // 빨간색 테두리
+                    });
+          }
+        </script>
       </section>
       <!-- ========== section end ========== -->
 
