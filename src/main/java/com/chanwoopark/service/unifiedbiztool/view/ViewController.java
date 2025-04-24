@@ -38,7 +38,7 @@ public class ViewController {
         ModelAndView modelAndView = new ModelAndView("signin");
 
         if (error != null) {
-            modelAndView.addObject("errorMessage", "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
+            modelAndView.addObject("errorMessage", "로그인에 실패했습니다. 비밀번호를 확인해주세요.");
         }
 
         if (logout != null) {
