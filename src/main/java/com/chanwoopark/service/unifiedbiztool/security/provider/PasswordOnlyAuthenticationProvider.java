@@ -15,12 +15,11 @@ import java.util.List;
 @Component
 public class PasswordOnlyAuthenticationProvider implements AuthenticationProvider {
 
-    private final String correctPassword = "1111";
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String password = authentication.getCredentials().toString();
 
+        String correctPassword = "ehdydgkwlak!2";
         if (correctPassword.equals(password)) {
             List<GrantedAuthority> authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("사원")
