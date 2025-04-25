@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout/defaultLayout}">
+
+  <head>
+  <!-- 페이지별 타이틀 설정 -->
+    <title>게시글</title>
+  </head>
+
+  <body>
+    <section layout:fragment="content" class="section">
+        <div class="container-fluid">
+          <!-- ========== title-wrapper start ========== -->
+          <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+              <div class="col-md-6">
+                <div class="title">
+                  <h2>글작성</h2>
+                </div>
+              </div>
+              <!-- end col -->
+              <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                        <a href="#0">메인</a>
+                      </li>
+                      <li class="breadcrumb-item active" aria-current="page">
+                        글작성
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+              </div>
+              <!-- end col -->
+            </div>
+            <!-- end row -->
+          </div>
+          <!-- ========== title-wrapper end ========== -->
+          <div class="invoice-wrapper">
+            <div class="row">
+              <div class="col-12">
+                <div class="invoice-card card-style mb-30">
+                  <form th:action="@{/posts/save}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="input-style-1">
+                      <label>제목</label>
+                      <input name="title" type="text" placeholder="제목" required>
+                    </div>
+                    <div class="input-style-1">
+                      <label>내용</label>
+                      <textarea name="content" placeholder="게시글 본문을 입력해주세요.." rows="5" required></textarea>
+                    </div>
+
+                    <div class="invoice-action">
+                      <ul class="d-flex flex-wrap align-items-center justify-content-center">
+                        <li class="m-2">
+                          <!-- 취소 버튼 - 목록 페이지로 이동하도록 설정 -->
+                          <a th:href="@{/posts}" class="main-btn primary-btn-outline btn-hover">
+                            취소
+                          </a>
+                        </li>
+                        <li class="m-2">
+                          <!-- 버튼 타입을 submit으로 변경 -->
+                          <button type="submit" class="main-btn primary-btn btn-hover">
+                            작성
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </form>
+                </div>
+                <!-- End Card -->
+              </div>
+              <!-- ENd Col -->
+            </div>
+            <!-- End Row -->
+          </div>
+        </div>
+        <!-- end container -->
+      </section>
+  </body>
+</html>
