@@ -26,6 +26,7 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -133,6 +134,11 @@ public class RedisConfig {
                 .setConnectionPoolSize(2)
                 .setRetryAttempts(3)
                 .setRetryInterval(1500);
+
+        if (!Objects.equals(password, "") && password != null) {
+            config.useSingleServer().setPassword(password);
+        }
+
         return Redisson.create(config);
     }
 
