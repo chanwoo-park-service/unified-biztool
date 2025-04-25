@@ -53,6 +53,7 @@
 })();
 
 let messageInterval;
+let hideTimeoutId;
 
 const messages = {
   loading: [
@@ -66,26 +67,39 @@ const messages = {
     "비즈니스 매니저의 문을 노크하는 중입니다..."
   ],
 
-  processing: [
-    "타겟 오디언스를 분석 중… 35세 남성이 제일 반응하네요.",
-    "광고 세트와 캠페인을 연결 중… 선 넘지 않게 조심!",
-    "비즈니스 로직이 ROI를 따지고 있어요… 싸움날 기세.",
-    "페이스북 픽셀과 대화 중입니다… 소셜한 성격이네요.",
-    "알고리즘이 소재 성능을 비교 분석 중입니다...",
-    "머신러닝이 CTR 예측치로 박터지게 싸우는 중!",
-    "광고 소재에 하트 누른 유저들 분석 중이에요...",
-    "크리에이티브별 도달률을 정렬 중… 숫자가 요동쳐요!"
+  rowProcessing: [
+    "광고 계정 정보를 불러오는 중입니다...",
+    "픽셀 연결 상태를 확인하고 있어요...",
+    "캠페인 설정값을 정리 중입니다...",
+    "광고 세트 타겟팅을 구성 중이에요...",
+    "광고 형식을 분석하고 있어요… 이미지냐, 슬라이드냐 그것이 문제!",
+    "랜딩페이지와 소재를 연결 중입니다...",
+    "오디언스 조건을 검토하고 있어요… 연령, 성별, 위치 등 꼼꼼하게!",
+    "소재 제목과 설명을 분석 중… 마케팅 감성 충전 중입니다!",
+    "광고 계정과 페이지의 연결 상태를 검증하는 중이에요...",
+    "예산과 입찰가 조건을 정렬 중입니다...",
+    "기타 요청사항을 확인하고 있어요… 특별 지시가 있을까요?",
+    "전체 구조를 검토 중… 캠페인, 세트, 소재가 제자리에 있는지 확인 중!",
+    "최종 광고 요청을 생성 중입니다… Meta API에 전송 준비 완료!",
+    "데이터 유효성을 체크 중… 빠진 항목은 없는지 확인하고 있어요."
   ],
 
-  saving: [
-    "광고 캠페인을 Meta에 업로드 중… 광고계의 로켓발사!",
-    "변경사항 저장 중… AI가 승인 여부를 눈치보는 중이에요.",
-    "예산을 Meta에 봉인 중… 다음 달 카드값이 걱정돼요.",
-    "업로드 중… 광고 소재가 클라우드로 여행 중이에요.",
-    "캠페인 구조를 안전하게 저장 중입니다… 구조도 깔끔하게!",
-    "백오피스에 로그를 정리 중이에요… 깨끗이 청소 완료!",
-    "API를 통해 광고 세트를 배치 중… 줄 세우는 건 기본!",
-    "업데이트 사항을 메타버스 우체통에 넣는 중이에요."
+  excelSaving: [
+    "엑셀에서 광고 계정 정보를 추출 중… 숫자들이 줄을 서고 있어요.",
+    "캠페인 목표를 해석 중입니다… '판매'? 좋아요, 바로 준비할게요!",
+    "광고 소재명을 복사 중… 파일명이 너무 창의적이에요!",
+    "위치와 언어 설정을 분석 중… 전 세계를 향한 광고 준비 완료!",
+    "예산을 계산 중… 0 하나 더 붙여도 괜찮으신가요?",
+    "연령별 타겟을 분류 중… 20대가 가장 반응 좋아요!",
+    "업로드 페이지명 확인 중… 이 링크, 믿어도 될까요?",
+    "크리에이티브 형식을 판별 중… '슬라이드', 멋진 선택이에요!",
+    "광고 세트를 정렬 중… 광고팀도 이렇게 질서 정연하진 않아요.",
+    "광고 제목과 문구를 스캔 중… 카피라이터 부럽지 않네요!",
+    "기타 요청사항을 읽는 중… 특이사항은 잘 메모했어요!",
+    "전체 엑셀 데이터를 구조화 중… JSON이 예뻐지고 있어요.",
+    "Meta 광고 설정을 최종 반영 중… API도 긴장하네요.",
+    "변경 사항 저장 중… 이제 진짜로 발사 준비 완료!",
+    "업로드가 거의 완료됐어요… 클라우드에 광고가 날아가고 있어요!"
   ]
 };
 
@@ -97,14 +111,18 @@ function showSpinner(taskType) {
   const messageElement = document.getElementById('preloader-message');
   const preloader = document.getElementById('preloader');
 
+  if (hideTimeoutId) {
+    clearTimeout(hideTimeoutId);
+    hideTimeoutId = null;
+  }
+
   const currentMessages = messages[taskType];
-  let messageIndex = 0;
 
   preloader.style.display = 'flex';
 
   preloader.classList.add('visible');
 
-  messageElement.textContent = currentMessages[messageIndex];
+  messageElement.textContent = currentMessages[Math.floor(Math.random() * currentMessages.length)];
 
   if (messageInterval) clearInterval(messageInterval);
 
@@ -124,20 +142,49 @@ function showSpinner(taskType) {
       messageElement.textContent = currentMessages[randomIndex];
       messageElement.style.opacity = 1;
     }, 300);
-  }, 3000);
+  }, 2500);
 }
 
-function hideSpinner() {
+function hideSpinner(success = true, finalMessage = '') {
   const preloader = document.getElementById('preloader');
+  const messageElement = document.getElementById('preloader-message');
+
   if (messageInterval) {
     clearInterval(messageInterval);
     messageInterval = null;
   }
-  preloader.classList.remove('visible');
 
-  setTimeout(() => {
-    preloader.style.display = 'none';
-  }, 500);
+  if (hideTimeoutId) {
+    clearTimeout(hideTimeoutId);
+    hideTimeoutId = null;
+  }
+
+  if (finalMessage) {
+    const prefix = success ? '✅' : '❌';
+    messageElement.style.opacity = 0;
+
+    setTimeout(() => {
+      messageElement.textContent = `${prefix} ${finalMessage}`;
+      messageElement.style.opacity = 1;
+    }, 300);
+
+    hideTimeoutId = setTimeout(() => {
+      preloader.classList.remove('visible');
+
+      hideTimeoutId = setTimeout(() => {
+        preloader.style.display = 'none';
+        hideTimeoutId = null;
+      }, 500);
+    }, 1800);
+
+  } else {
+    preloader.classList.remove('visible');
+
+    hideTimeoutId = setTimeout(() => {
+      preloader.style.display = 'none';
+      hideTimeoutId = null;
+    }, 500);
+  }
 }
 
 function fetchWithSpinner(url, options = {}, taskType = 'loading') {
