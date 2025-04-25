@@ -129,8 +129,6 @@ function showSpinner(taskType) {
 
 function hideSpinner() {
   const preloader = document.getElementById('preloader');
-  const messageElement = document.getElementById('preloader-message');
-
   if (messageInterval) {
     clearInterval(messageInterval);
     messageInterval = null;
