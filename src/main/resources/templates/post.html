@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout/defaultLayout}">
+
+  <head>
+  <!-- 페이지별 타이틀 설정 -->
+    <title>게시글</title>
+  </head>
+
+  <body>
+    <section layout:fragment="content" class="section">
+        <div class="container-fluid">
+          <!-- ========== title-wrapper start ========== -->
+          <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+              <div class="col-md-6">
+                <div class="title">
+                  <h2>게시글 본문</h2>
+                </div>
+              </div>
+              <!-- end col -->
+              <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                        <a th:href="@{/}">메인</a>
+                      </li>
+                      <li class="breadcrumb-item active" aria-current="page">
+                        게시글
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+              </div>
+              <!-- end col -->
+            </div>
+            <!-- end row -->
+          </div>
+          <!-- ========== title-wrapper end ========== -->
+          <div class="invoice-wrapper">
+            <div class="row">
+              <div class="col-12">
+                <div class="invoice-card card-style mb-30">
+                  <div class="">
+                    <div class="col-md-12">
+                      <h2 class="mb-50" th:text="${post.title}">게시글 제목</h2>
+                      <p class="text-sm mb-50" th:text="${post.content}" style="white-space: pre-wrap;">
+                        게시글 본문
+                      </p>
+                    </div>
+                  </div>
+                  <div class="invoice-action">
+                    <ul class="d-flex flex-wrap align-items-center justify-content-center">
+                      <li class="m-2">
+                        <a th:href="@{/posts/edit(postId=${post.id})}" class="main-btn primary-btn-outline btn-hover">
+                          수정
+                        </a>
+                      </li>
+                      <li class="m-2">
+                        <form th:action="@{/posts/delete}" method="post">
+                          <input type="hidden" name="id" th:value="${post.id}" />
+                          <button type="submit" class="main-btn danger-btn btn-hover">
+                            삭제
+                          </button>
+                        </form>
+
+
+                      </li>
+                      <li class="m-2">
+                        <a th:href="@{/}" class="main-btn primary-btn btn-hover">
+                          목록
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <!-- End Card -->
+              </div>
+              <!-- ENd Col -->
+            </div>
+            <!-- End Row -->
+          </div>
+        </div>
+        <!-- end container -->
+      </section>
+  </body>
+</html>

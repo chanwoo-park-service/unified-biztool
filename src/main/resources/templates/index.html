@@ -7,7 +7,7 @@
 
 <head>
     <!-- 페이지별 타이틀 설정 -->
-    <title>eCommerce Dashboard</title>
+    <title>Unified biztool</title>
 </head>
 
 <body>
@@ -19,7 +19,7 @@
         <div class="row align-items-center">
             <div class="col-md-6">
                 <div class="title">
-                    <h2>eCommerce Dashboard</h2>
+                    <h2>Unified Biztool</h2>
                 </div>
             </div>
             <!-- end col -->
@@ -27,11 +27,8 @@
                 <div class="breadcrumb-wrapper">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="#0">Dashboard</a>
-                            </li>
                             <li class="breadcrumb-item active" aria-current="page">
-                                eCommerce
+                                대시보드
                             </li>
                         </ol>
                     </nav>
@@ -42,436 +39,72 @@
         <!-- end row -->
     </div>
     <!-- ========== title-wrapper end ========== -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card-style settings-card-1 mb-30">
+                <div class="title mb-30  justify-content-between align-items-center">
+                    <h6>Meta 엑셀 서식 다운로드</h6>
 
-    <!-- 여기부터 원래 <section class="section"> 안에 있던 모든 내용 -->
-    <div class="row">
-        <div class="col-xl-3 col-lg-4 col-sm-6">
-            <div class="icon-card mb-30">
-                <div class="icon purple">
-                    <i class="lni lni-cart-full"></i>
+
                 </div>
-                <div class="content">
-                    <h6 class="mb-10">New Orders</h6>
-                    <h3 class="text-bold mb-10">34567</h3>
-                    <p class="text-sm text-success">
-                        <i class="lni lni-arrow-up"></i> +2.00%
-                        <span class="text-gray">(30 days)</span>
-                    </p>
-                </div>
-            </div>
-            <!-- End Icon Cart -->
-        </div>
-        <!-- End Col -->
-        <div class="col-xl-3 col-lg-4 col-sm-6">
-            <div class="icon-card mb-30">
-                <div class="icon success">
-                    <i class="lni lni-dollar"></i>
-                </div>
-                <div class="content">
-                    <h6 class="mb-10">Total Income</h6>
-                    <h3 class="text-bold mb-10">$74,567</h3>
-                    <p class="text-sm text-success">
-                        <i class="lni lni-arrow-up"></i> +5.45%
-                        <span class="text-gray">Increased</span>
-                    </p>
+                <div class="profile-info">
+
+                    <div class="alert-box success-alert">
+
+                        <div class="alert">
+                            <h4 class="alert-heading">Meta 엑셀 서식</h4>
+                            <a href="/excel/excel_sample.xlsx"><p class="text-medium">excel_sample.xlsx</p></a>
+                        </div>
+                    </div>
+
+
+
                 </div>
             </div>
-            <!-- End Icon Cart -->
+            <!-- end card -->
         </div>
-        <!-- End Col -->
-        <div class="col-xl-3 col-lg-4 col-sm-6">
-            <div class="icon-card mb-30">
-                <div class="icon primary">
-                    <i class="lni lni-credit-cards"></i>
-                </div>
-                <div class="content">
-                    <h6 class="mb-10">Total Expense</h6>
-                    <h3 class="text-bold mb-10">$24,567</h3>
-                    <p class="text-sm text-danger">
-                        <i class="lni lni-arrow-down"></i> -2.00%
-                        <span class="text-gray">Expense</span>
-                    </p>
-                </div>
-            </div>
-            <!-- End Icon Cart -->
-        </div>
-        <!-- End Col -->
-        <div class="col-xl-3 col-lg-4 col-sm-6">
-            <div class="icon-card mb-30">
-                <div class="icon orange">
-                    <i class="lni lni-user"></i>
-                </div>
-                <div class="content">
-                    <h6 class="mb-10">New User</h6>
-                    <h3 class="text-bold mb-10">34567</h3>
-                    <p class="text-sm text-danger">
-                        <i class="lni lni-arrow-down"></i> -25.00%
-                        <span class="text-gray"> Earning</span>
-                    </p>
-                </div>
-            </div>
-            <!-- End Icon Cart -->
-        </div>
-        <!-- End Col -->
+        <!-- end col -->
+
+
+        <!-- end col -->
     </div>
-    <!-- End Row -->
     <div class="row">
-        <div class="col-lg-7">
-            <div class="card-style mb-30">
-                <div class="title d-flex flex-wrap justify-content-between">
-                    <div class="left">
-                        <h6 class="text-medium mb-10">Yearly Stats</h6>
-                        <h3 class="text-bold">$245,479</h3>
-                    </div>
-                    <div class="right">
-                        <div class="select-style-1">
-                            <div class="select-position select-sm">
-                                <select class="light-bg">
-                                    <option value="">Yearly</option>
-                                    <option value="">Monthly</option>
-                                    <option value="">Weekly</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- end select -->
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div class="chart">
-                    <canvas id="Chart1" style="width: 100%; height: 400px; margin-left: -35px;"></canvas>
-                </div>
-                <!-- End Chart -->
-            </div>
-        </div>
-        <!-- End Col -->
-        <div class="col-lg-5">
-            <div class="card-style mb-30">
-                <div class="title d-flex flex-wrap align-items-center justify-content-between">
-                    <div class="left">
-                        <h6 class="text-medium mb-30">Sales/Revenue</h6>
-                    </div>
-                    <div class="right">
-                        <div class="select-style-1">
-                            <div class="select-position select-sm">
-                                <select class="light-bg">
-                                    <option value="">Yearly</option>
-                                    <option value="">Monthly</option>
-                                    <option value="">Weekly</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- end select -->
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div class="chart">
-                    <canvas id="Chart2" style="width: 100%; height: 400px; margin-left: -45px;"></canvas>
-                </div>
-                <!-- End Chart -->
-            </div>
-        </div>
-        <!-- End Col -->
-    </div>
-    <!-- End Row -->
-    <div class="row">
-        <div class="col-lg-5">
-            <div class="card-style mb-30">
-                <div class="title d-flex justify-content-between align-items-center">
-                    <div class="left">
-                        <h6 class="text-medium mb-30">Sells by State</h6>
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div id="map" style="width: 100%; height: 400px; overflow: hidden;"></div>
-                <p>Last updated: 7 days ago</p>
-            </div>
-        </div>
-        <!-- End Col -->
-        <div class="col-lg-7">
-            <div class="card-style mb-30">
-                <div class="title d-flex flex-wrap justify-content-between align-items-center">
-                    <div class="left">
-                        <h6 class="text-medium mb-30">Top Selling Products</h6>
-                    </div>
-                    <div class="right">
-                        <div class="select-style-1">
-                            <div class="select-position select-sm">
-                                <select class="light-bg">
-                                    <option value="">Yearly</option>
-                                    <option value="">Monthly</option>
-                                    <option value="">Weekly</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- end select -->
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div class="table-responsive">
-                    <table class="table top-selling-table">
-                        <thead>
-                        <tr>
-                            <th></th>
-                            <th> <h6 class="text-sm text-medium">Products</h6> </th>
-                            <th class="min-width"> <h6 class="text-sm text-medium">Category</h6> </th>
-                            <th class="min-width"> <h6 class="text-sm text-medium">Price</h6> </th>
-                            <th class="min-width"> <h6 class="text-sm text-medium">Sold</h6> </th>
-                            <th class="min-width"> <h6 class="text-sm text-medium">Profit</h6> </th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>
-                                <div class="check-input-primary">
-                                    <input class="form-check-input" type="checkbox" id="checkbox-1-1" />
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product">
-                                    <div class="image">
-                                        <!-- Thymeleaf URL 사용 -->
-                                        <img th:src="@{/images/products/product-mini-1.jpg}" alt="" />
-                                    </div>
-                                    <p class="text-sm">Arm Chair</p>
-                                </div>
-                            </td>
-                            <td> <p class="text-sm">Interior</p> </td>
-                            <td> <p class="text-sm">$345</p> </td>
-                            <td> <p class="text-sm">43</p> </td>
-                            <td> <p class="text-sm">$45</p> </td>
-                            <td>
-                                <div class="action justify-content-end">
-                                    <button class="more-btn ml-10 dropdown-toggle" id="moreAction1-1" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="lni lni-more-alt"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1-1">
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Remove</a> </li>
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Edit</a> </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- 다른 테이블 행들도 유사하게 이미지 경로 수정 및 ID 고유하게 변경 -->
-                        <tr>
-                            <td>
-                                <div class="check-input-primary">
-                                    <input class="form-check-input" type="checkbox" id="checkbox-1-2" />
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product">
-                                    <div class="image">
-                                        <img th:src="@{/images/products/product-mini-2.jpg}" alt="" />
-                                    </div>
-                                    <p class="text-sm">SOfa</p>
-                                </div>
-                            </td>
-                            <td> <p class="text-sm">Interior</p> </td>
-                            <td> <p class="text-sm">$145</p> </td>
-                            <td> <p class="text-sm">13</p> </td>
-                            <td> <p class="text-sm">$15</p> </td>
-                            <td>
-                                <div class="action justify-content-end">
-                                    <button class="more-btn ml-10 dropdown-toggle" id="moreAction1-2" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="lni lni-more-alt"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1-2">
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Remove</a> </li>
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Edit</a> </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="check-input-primary">
-                                    <input class="form-check-input" type="checkbox" id="checkbox-1-3" />
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product">
-                                    <div class="image">
-                                        <img th:src="@{/images/products/product-mini-3.jpg}" alt="" />
-                                    </div>
-                                    <p class="text-sm">Dining Table</p>
-                                </div>
-                            </td>
-                            <td> <p class="text-sm">Interior</p> </td>
-                            <td> <p class="text-sm">$95</p> </td>
-                            <td> <p class="text-sm">32</p> </td>
-                            <td> <p class="text-sm">$215</p> </td>
-                            <td>
-                                <div class="action justify-content-end">
-                                    <button class="more-btn ml-10 dropdown-toggle" id="moreAction1-3" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="lni lni-more-alt"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1-3">
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Remove</a> </li>
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Edit</a> </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="check-input-primary">
-                                    <input class="form-check-input" type="checkbox" id="checkbox-1-4" />
-                                </div>
-                            </td>
-                            <td>
-                                <div class="product">
-                                    <div class="image">
-                                        <img th:src="@{/images/products/product-mini-4.jpg}" alt="" />
-                                    </div>
-                                    <p class="text-sm">Office Chair</p>
-                                </div>
-                            </td>
-                            <td> <p class="text-sm">Interior</p> </td>
-                            <td> <p class="text-sm">$105</p> </td>
-                            <td> <p class="text-sm">23</p> </td>
-                            <td> <p class="text-sm">$345</p> </td>
-                            <td>
-                                <div class="action justify-content-end">
-                                    <button class="more-btn ml-10 dropdown-toggle" id="moreAction1-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="lni lni-more-alt"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1-4">
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Remove</a> </li>
-                                        <li class="dropdown-item"> <a href="#0" class="text-gray">Edit</a> </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <!-- End Table -->
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-30">
+                <div class="title d-flex align-items-center flex-wrap">
+                    <h2 class="mr-40">메모</h2>
+                        <a th:href="@{/posts/write}" class="main-btn primary-btn btn-hover btn-sm">
+                        <i class="lni lni-plus mr-5"></i>메모 작성</a>
                 </div>
             </div>
         </div>
-        <!-- End Col -->
-    </div>
-    <!-- End Row -->
-    <div class="row">
-        <div class="col-lg-7">
-            <div class="card-style mb-30">
-                <div class="title d-flex flex-wrap align-items-center justify-content-between">
-                    <div class="left">
-                        <h6 class="text-medium mb-2">Sales Forecast</h6>
-                    </div>
-                    <div class="right">
-                        <div class="select-style-1 mb-2">
-                            <div class="select-position select-sm">
-                                <select class="light-bg">
-                                    <option value="">Last Month</option>
-                                    <option value="">Last 3 Months</option>
-                                    <option value="">Last Year</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- end select -->
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div class="chart">
-                    <div id="legend3">
-                        <ul class="legend3 d-flex flex-wrap align-items-center mb-30">
-                            <li>
-                                <div class="d-flex">
-                                    <span class="bg-color primary-bg"> </span>
-                                    <div class="text">
-                                        <p class="text-sm text-success">
-                                            <span class="text-dark">Revenue</span> +25.55%
-                                            <i class="lni lni-arrow-up"></i>
-                                        </p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex">
-                                    <span class="bg-color purple-bg"></span>
-                                    <div class="text">
-                                        <p class="text-sm text-success">
-                                            <span class="text-dark">Net Profit</span> +45.55%
-                                            <i class="lni lni-arrow-up"></i>
-                                        </p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex">
-                                    <span class="bg-color orange-bg"></span>
-                                    <div class="text">
-                                        <p class="text-sm text-danger">
-                                            <span class="text-dark">Order</span> -4.2%
-                                            <i class="lni lni-arrow-down"></i>
-                                        </p>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <canvas id="Chart3" style="width: 100%; height: 450px; margin-left: -35px;"></canvas>
+        <!-- end col -->
+        <!-- postList가 있을 경우 -->
+        <div th:if="${not #lists.isEmpty(postList)}" th:each="post : ${postList}" class="col-xl-4 col-lg-4 col-md-6 col-sm-6">
+            <div class="card-style-3 mb-30 fixed-card">
+                <div class="card-content">
+                    <h4><a th:href="@{/posts(postId=${post.id})}" th:text="${post.title}">Card Title here</a></h4>
+                    <p th:text="${#strings.abbreviate(post.content, 150)}">
+                        With supporting text below as a natural lead-in to
+                        additional content. consectetur adipiscing elit. Integer
+                        posuere erat a ante. With supporting text below as a
+                        natural lead-in to additional content. consectetur
+                        adipiscing elit. Integer posuere erat a ante.
+                    </p>
+                    <a th:href="@{/posts(postId=${post.id})}" class="read-more">Read More</a>
                 </div>
             </div>
         </div>
-        <!-- End Col -->
-        <div class="col-lg-5">
-            <div class="card-style mb-30">
-                <div class="title d-flex flex-wrap align-items-center justify-content-between">
-                    <div class="left">
-                        <h6 class="text-medium mb-2">Traffic</h6>
-                    </div>
-                    <div class="right">
-                        <div class="select-style-1 mb-2">
-                            <div class="select-position select-sm">
-                                <select class="bg-ligh">
-                                    <option value="">Last 6 Months</option>
-                                    <option value="">Last 3 Months</option>
-                                    <option value="">Last Year</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- end select -->
-                    </div>
-                </div>
-                <!-- End Title -->
-                <div class="chart">
-                    <div id="legend4">
-                        <ul class="legend3 d-flex flex-wrap gap-3 gap-sm-0 align-items-center mb-30">
-                            <li>
-                                <div class="d-flex">
-                                    <span class="bg-color primary-bg"> </span>
-                                    <div class="text">
-                                        <p class="text-sm text-success">
-                                            <span class="text-dark">Store Visits</span>
-                                            +25.55%
-                                            <i class="lni lni-arrow-up"></i>
-                                        </p>
-                                        <h2>3456</h2>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="d-flex">
-                                    <span class="bg-color danger-bg"></span>
-                                    <div class="text">
-                                        <p class="text-sm text-danger">
-                                            <span class="text-dark">Visitors</span> -2.05%
-                                            <i class="lni lni-arrow-down"></i>
-                                        </p>
-                                        <h2>3456</h2>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <canvas id="Chart4" style="width: 100%; height: 420px; margin-left: -35px;"></canvas>
-                </div>
-                <!-- End Chart -->
+
+        <!-- postList가 없을 경우 -->
+        <div th:if="${#lists.isEmpty(postList)}" class="col-lg-6">
+            <div class="card-style settings-card-1 mb-30">
+                <p class="read-more">
+                    게시글이 존재하지 않습니다.
+                </p>
             </div>
+            <!-- end card -->
         </div>
-        <!-- End Col -->
     </div>
     <!-- End Row -->
     <div class="row">
