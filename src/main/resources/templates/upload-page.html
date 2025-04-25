@@ -21,6 +21,7 @@
 
             <div class="menu-toggle-btn mr-15">
               <button type="button" id="uploadButton" >Upload</button>
+              <button type="button" th:onclick="FileUpload()" >메타전송</button>
               <input type="file" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
             </div>
 
@@ -106,23 +107,24 @@
     setList
     setName
     setResolved*/
-    if (!document.getElementsByName("files").values()) {
+    /*if (!document.getElementsByName("files").length === 0) {
       alert("메타에 업로드할 파일을 먼저 선택해주세요.");
       return; // 파일이 선택되지 않았을 경우 함수 종료
-    }
+    }*/
     let row;
     let files;
-    let formData
+    let formData;
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
     let headerValues = {};
     if (csrfHeader && csrfToken) {
       headerValues[csrfHeader] = csrfToken;
+      headerValues['Content-Type'] = 'multipart/form-data';
     }
-    gridOptions.rowData.forEach(function (value, index, array) {
+    gridApi.getGridOption("rowData").forEach(function (value, index, array) {
       formData = new FormData();
-      row = gridOptions.rowData[index].toJSON();//스트림 써서 rowData안에 파일 있는지 확인.
-      files = gridOptions.rowData[index].files;
+      row = gridApi.getGridOption("rowData")[index];//스트림 써서 rowData안에 파일 있는지 확인.
+      files = document.getElementsByName("files")[index].files;
       formData.append('files', files);
       formData.append('request', row);
       fetchCall(formData , headerValues);
