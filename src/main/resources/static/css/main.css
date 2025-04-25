@@ -5963,3 +5963,17 @@ h6,
   align-items: center;
   justify-content: center;
 }
+
+#preloader .loading-message {
+  font-size: 16px;
+  color: #365CF5;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
