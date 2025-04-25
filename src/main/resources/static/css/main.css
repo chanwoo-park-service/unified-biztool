@@ -6030,3 +6030,21 @@ h6,
   transition: opacity 0.3s ease;
   opacity: 1;
 }
+
+.fixed-card {
+  height: 320px;              /* 카드 높이 고정 */
+  width: 100%;                /* 부모 컨테이너 너비에 맞춤 */
+  display: flex;              /* Flexbox 사용 */
+  flex-direction: column;     /* 세로 방향 정렬 */
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;               /* 카드 내용이 전체 높이를 채우도록 */
+}
+
+.read-more {
+  margin-top: auto;           /* 버튼을 카드 하단에 배치 */
+  align-self: flex-start;     /* 버튼 왼쪽 정렬 */
+}
