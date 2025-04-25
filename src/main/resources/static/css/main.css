@@ -5927,9 +5927,18 @@ h6,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
   z-index: 999999;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
 }
+
+#preloader.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+
 #preloader .spinner {
   width: 80px;
   height: 80px;
@@ -5962,4 +5971,80 @@ h6,
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#preloader .loading-message {
+  font-size: 16px;
+  color: #365CF5;
+  text-align: center;
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* 🔹 배경 블러 + 반투명 */
+.preloader-blur {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px); /* ⬅ 요거 중요! */
+  z-index: 1;
+}
+
+/* 🔹 내용 (스피너/메시지) */
+.preloader-content {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out forwards;
+  text-align: center;
+  color: white;
+}
+
+/* 🔹 fade-in 애니메이션 */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* 🔹 간단한 스피너 스타일 */
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-message h6 {
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+.fixed-card {
+  height: 320px;              /* 카드 높이 고정 */
+  width: 100%;                /* 부모 컨테이너 너비에 맞춤 */
+  display: flex;              /* Flexbox 사용 */
+  flex-direction: column;     /* 세로 방향 정렬 */
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;               /* 카드 내용이 전체 높이를 채우도록 */
+}
+
+.read-more {
+  margin-top: auto;           /* 버튼을 카드 하단에 배치 */
+  align-self: flex-start;     /* 버튼 왼쪽 정렬 */
 }

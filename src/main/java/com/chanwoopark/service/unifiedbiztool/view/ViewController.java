@@ -1,16 +1,32 @@
 package com.chanwoopark.service.unifiedbiztool.view;
 
 
+import com.chanwoopark.service.unifiedbiztool.post.model.dto.PostResponse;
+import com.chanwoopark.service.unifiedbiztool.post.service.PostService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.List;
+
+@Slf4j
+@RequiredArgsConstructor
 @Controller
 public class ViewController {
 
-    @GetMapping(value = {"/index", ""})
+    private final PostService postService;
+
+    @GetMapping(value = "")
     public ModelAndView index() {
-        return new ModelAndView("index");
+        ModelAndView modelAndView = new ModelAndView("index");
+
+        List<PostResponse> postResponsesList = postService.getAllPosts();
+
+        modelAndView.addObject("postList", postResponsesList);
+
+        return modelAndView;
     }
 
 

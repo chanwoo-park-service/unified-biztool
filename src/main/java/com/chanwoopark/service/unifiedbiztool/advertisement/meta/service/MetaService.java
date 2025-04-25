@@ -255,7 +255,7 @@ public class MetaService {
         };
     }
 
-        private List<Pixel> getPixels(String accountId, String accessToken) {
+    private List<Pixel> getPixels(String accountId, String accessToken) {
         String pixelUrl = META_URL
                 + "/v22.0/"
                 + Objects.requireNonNull(accountId)

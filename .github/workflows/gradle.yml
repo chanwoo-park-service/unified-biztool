@@ -1,0 +1,42 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: Build with Gradle Wrapper
+        run: ./gradlew clean build
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Execute Deployment Script
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+        run: |
+          ssh -o "StrictHostKeyChecking=no" -p ${SERVER_PORT} ${SSH_USER}@${SERVER_URL} 'bash deploy.sh'

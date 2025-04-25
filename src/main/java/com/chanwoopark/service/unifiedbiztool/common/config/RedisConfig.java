@@ -6,6 +6,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.P
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Set;
 import com.chanwoopark.service.unifiedbiztool.api.model.entity.ApiCache;
 import com.chanwoopark.service.unifiedbiztool.common.model.entity.PlatformToken;
+import com.chanwoopark.service.unifiedbiztool.post.model.entity.Post;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -22,10 +23,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.serializer.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,6 +50,21 @@ public class RedisConfig {
         redisStandaloneConfiguration.setPassword(password);
 
         return new LettuceConnectionFactory(redisStandaloneConfiguration);
+    }
+
+    @Bean
+    public RedisTemplate<String, Post> postRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Post> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        Jackson2JsonRedisSerializer<Post> serializer = new Jackson2JsonRedisSerializer<>(Post.class);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        template.setValueSerializer(serializer);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        return template;
     }
 
     @Bean
@@ -133,7 +149,14 @@ public class RedisConfig {
                 .setConnectionPoolSize(2)
                 .setRetryAttempts(3)
                 .setRetryInterval(1500);
+
+        if (!Objects.equals(password, "") && password != null) {
+            config.useSingleServer().setPassword(password);
+        }
+
         return Redisson.create(config);
     }
+
+
 
 }
