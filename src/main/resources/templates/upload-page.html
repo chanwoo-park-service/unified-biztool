@@ -65,6 +65,23 @@
 
 
 </div> <!-- layout:fragment="content" 끝 -->
+  <th:block layout:fragment="style">
+    <style>
+      input[type=file]::file-selector-button {
+        width: 150px;
+        height: 30px;
+        background: #fff;
+        border: 1px solid rgb(77,77,77);
+        border-radius: 10px;
+        cursor: pointer;
+        line-height: normal;
+        &:hover {
+          background: rgb(77,77,77);
+          color: #fff;
+        }
+      }
+    </style>
+  </th:block>
 
 <!-- 6. 페이지별 스크립트가 필요하면 여기에 추가 -->
 <th:block layout:fragment="script">
@@ -73,7 +90,7 @@
   let currentRowHeight;
   let gridApi;
 
-  function FileUpload(e) {
+  function FileUpload() {
     /*비번 ehdydgkwlak!2
     리스트 형태
     adAccountList
@@ -89,19 +106,32 @@
     setList
     setName
     setResolved*/
-    console.log(e);
-
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-
-    if (!file) {
+    if (!document.getElementsByName("files").values()) {
+      alert("메타에 업로드할 파일을 먼저 선택해주세요.");
       return; // 파일이 선택되지 않았을 경우 함수 종료
     }
+    let row;
+    let files;
+    let formData
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+    let headerValues = {};
+    if (csrfHeader && csrfToken) {
+      headerValues[csrfHeader] = csrfToken;
+    }
+    gridOptions.rowData.forEach(function (value, index, array) {
+      formData = new FormData();
+      row = gridOptions.rowData[index].toJSON();//스트림 써서 rowData안에 파일 있는지 확인.
+      files = gridOptions.rowData[index].files;
+      formData.append('files', files);
+      formData.append('request', row);
+      fetchCall(formData , headerValues);
+    });
+  }
 
-    const formData = new FormData();
-    formData.append('files', file);
-    formData.append('request', row);//여기에 해당 row event.eGui.parentElement.parentElement를 넣어야할지.
+  function fetchCall(formData,headerValues) {
     fetch('/api/meta/publish', { // 서버 업로드 엔드포인트
+      headers: headerValues,
       method: 'POST',
       body: formData,
     })
@@ -124,10 +154,11 @@
       const eButton = document.createElement("input");
       eButton.setAttribute("type", "file");
       eButton.setAttribute("name", "files");
-      //eButton.className = "primary-btn btn-hover simple-btn";
+      eButton.setAttribute("multiple", "multiple");
       eButton.textContent = "파일 업로드";
+      //eButton.className = "primary-btn btn-hover simple-btn";
       //this.eventListener = () => FileUpload(this.eGui);// 파일업로드 올리기
-      eButton.addEventListener("click", this.eventListener);
+      //eButton.addEventListener("click", this.eventListener);
       this.eGui.appendChild(eButton);
     }
 
@@ -156,7 +187,7 @@
         field: "button",
         cellRenderer: CustomButtonComponent,
         flex: 1,
-        minWidth: 100
+        minWidth: 200
       },
       {
         headerName: "캠페인 목표(선택)",
