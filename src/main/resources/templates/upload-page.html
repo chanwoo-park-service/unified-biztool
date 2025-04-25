@@ -19,10 +19,12 @@
 
       <form enctype="multipart/form-data">
 
-            <div class="menu-toggle-btn mr-15">
-              <button type="button" id="uploadButton" >Upload</button>
-              <input type="file" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
-            </div>
+        <div class="menu-toggle-btn mr-15">
+          <button type="button" id="uploadButton" >Upload</button>
+          <button type="button" th:onclick="FileUpload()" >메타전송</button>
+          <input type="file" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap">Open modal for @getbootstrap</button>
+        </div>
 
       </form>
 
@@ -61,330 +63,116 @@
 
     <!-- end row -->
 
-  <!-- ========== tables-wrapper end ========== -->
+    <!-- ========== tables-wrapper end ========== -->
 
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">선택창</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="sm-4">
+                <label for="recipient-name" class="col-form-label">Recipient:</label>
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
 
-</div> <!-- layout:fragment="content" 끝 -->
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
 
-<!-- 6. 페이지별 스크립트가 필요하면 여기에 추가 -->
-<th:block layout:fragment="script">
-<script>
-  let minRowHeight = 150;
-  let currentRowHeight;
-  let gridApi;
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
 
-  function FileUpload(e) {
-    /*비번 ehdydgkwlak!2
-    리스트 형태
-    adAccountList
-    adAccountName
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Message:</label>
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
 
-    campaignList
-    campaignName
-    campaignResolved
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
 
-    pixelList
-    pixelResolved
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Send message</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    setList
-    setName
-    setResolved*/
-    console.log(e);
-
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-
-    if (!file) {
-      return; // 파일이 선택되지 않았을 경우 함수 종료
-    }
-
-    const formData = new FormData();
-    formData.append('files', file);
-    formData.append('request', row);//여기에 해당 row event.eGui.parentElement.parentElement를 넣어야할지.
-    fetch('/api/meta/publish', { // 서버 업로드 엔드포인트
-      method: 'POST',
-      body: formData,
-    })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Upload success:', data);
-            })
-            .catch(error => {
-              console.error('Upload error:', error);
-            });
-  }
-
-  class CustomButtonComponent {
-    eGui;
-    eButton;
-    eventListener;
-
-    init() {
-      this.eGui = document.createElement("div");
-      const eButton = document.createElement("input");
-      eButton.setAttribute("type", "file");
-      eButton.setAttribute("name", "files");
-      //eButton.className = "primary-btn btn-hover simple-btn";
-      eButton.textContent = "파일 업로드";
-      //this.eventListener = () => FileUpload(this.eGui);// 파일업로드 올리기
-      eButton.addEventListener("click", this.eventListener);
-      this.eGui.appendChild(eButton);
-    }
-
-    getGui() {
-      return this.eGui;
-    }
-
-    refresh() {
-      return true;
-    }
-
-    destroy() {
-      if (this.eButton) {
-        this.eButton.removeEventListener("click", this.eventListener);
+  </div> <!-- layout:fragment="content" 끝 -->
+  <th:block layout:fragment="style">
+    <style>
+      input[type=file]::file-selector-button {
+        width: 150px;
+        height: 30px;
+        background: #fff;
+        border: 1px solid rgb(77,77,77);
+        border-radius: 10px;
+        cursor: pointer;
+        line-height: normal;
+        &:hover {
+          background: rgb(77,77,77);
+          color: #fff;
+        }
       }
-    }
-  }
+    </style>
+  </th:block>
 
-  const gridOptions = {
+  <!-- 6. 페이지별 스크립트가 필요하면 여기에 추가 -->
+  <script>
+    let minRowHeight = 150;
+    let currentRowHeight;
+    let gridApi;
 
-    rowData: [],
+    function FileUpload() {
+      /*비번 ehdydgkwlak!2
+      리스트 형태
+      adAccountList
+      adAccountName
 
-    columnDefs: [
-      {
-        headerName: "파일 업로드",
-        field: "button",
-        cellRenderer: CustomButtonComponent,
-        flex: 1,
-        minWidth: 100
-      },
-      {
-        headerName: "캠페인 목표(선택)",
-        field: "metaCampaignObjective",
-        editable: true,
-        flex: 1,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "판매",
-            "트래픽"
+      campaignList
+      campaignId를 넘김
+      campaignName 필드값
+      campaignResolved 여부
 
-          ],
-        },
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "광고 계정명",
-        field: "adAccountName",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "캠페인 형태(선택)",
-        field: "metaCampaignType",
-        editable: true,
-        flex: 1,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "ABO",
-            "ASC",
-            "CBO",
-          ],
-        },
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "캠페인명",
-        field: "campaignName",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "예산",
-        field: "budget",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "시작날짜",
-        field: "startDate",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "시작 시간",
-        field: "startTime",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "위치",
-        field: "location",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "언어",
-        field: "language",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "성별",
-        field: "gender",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "최소 연령",
-        field: "minAge",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "최대 연령",
-        field: "maxAge",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "세트명",
-        field: "setName",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "광고소재명",
-        field: "adMaterialName",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "업로드 페이지명",
-        field: "uploadPage",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "형식(선택)",
-        field: "metaCreativeFormat",
-        editable: true,
-        flex: 1,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "단일 이미지·동영상",
-            "슬라이드",
+      pixelList
+      pixelResolved
 
-          ],
-        },
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "랜딩페이지 URL",
-        field: "landingUrl",
-        editable: true,
-        flex: 1,
-        minWidth: 150, maxWidth: 300
-      },
-      {
-        headerName: "표시링크 URL",
-        field: "displayUrl",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "기본 문구",
-        field: "defaultText",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "제목",
-        field: "title",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "설명",
-        field: "description",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-      {
-        headerName: "기타 요청사항",
-        field: "otherRequests",
-        editable: true,
-        flex: 1,
-        minWidth: 100, maxWidth: 300
-      },
-    ],
-
-    rowClassRules: {
-      // apply red to Ford cars
-      "rag-green": (params) => params.data.agSelectCellEditor === "ASC",
-    },
-    /*rowData: getData(), 이거로 불러서 데이터 뿌려주기*/
-    autoSizeStrategy: {
-      type: "fitGridWidth",
-    },
-    onGridReady: (params) => {
-      minRowHeight = params.api.getSizesForCurrentTheme().rowHeight;
-      currentRowHeight = minRowHeight;
-    },
-
-    getRowHeight: (params) => {
-      return currentRowHeight;
-    },
-  };
-
-  let excelData =[];//확인용
-  document.addEventListener("DOMContentLoaded", function () {
-    const gridDiv = document.querySelector("#myGrid");
-    // gridApi를 여기서 초기화합니다.
-    gridApi = agGrid.createGrid(gridDiv, gridOptions);
-
-    const Input = document.getElementById('excelInput');
-    const uploadButton = document.getElementById('uploadButton');
-    let selectedFile;
-
-    Input.addEventListener('change', function (event) {
-      selectedFile = event.target.files[0];
-      // (선택 사항) 파일이 선택되면 버튼 활성화 등의 로직 추가 가능
-      if(selectedFile) {
-        console.log("파일 선택됨:", selectedFile.name);
-        // uploadButton.disabled = false; // 예시: 버튼 활성화
-      }
-    });
-
-    // 업로드 버튼 클릭 시 실행될 로직
-    uploadButton.addEventListener('click', function() {
-      // 파일이 선택되었는지 확인
-      if (!selectedFile) {
-        alert('업로드할 엑셀 파일을 먼저 선택해주세요.');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', selectedFile);
+      setList
+      setName
+      setResolved*/
 
       const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
       const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
@@ -393,45 +181,402 @@
         headerValues[csrfHeader] = csrfToken;
       }
 
-      console.log("파일 업로드 시작...");
-      gridApi.showLoadingOverlay();
+      const allRowData = gridApi.getGridOption("rowData");
+      if (!allRowData || allRowData.length === 0) {
+        alert("전송할 데이터가 없습니다.");
+        return;
+      }
 
-      fetch('/api/meta/upload', {
-        headers: headerValues,
+      let requestJson ;
+
+      const formData = new FormData();
+
+      let filesAttached = false;
+
+      const fileInputs = document.querySelectorAll('#myGrid input[type="file"][name="files"]');
+
+      fileInputs.forEach((input, index) => {
+        if (input.files && input.files.length > 0) {
+          for (let i = 0; i < input.files.length; i++) {
+
+            formData.append('files', input.files[i]);
+
+            filesAttached = true;
+          }
+        }
+      });
+      requestJson = JSON.stringify(allRowData[i]);
+      if (!filesAttached) {
+        alert("업로드할 파일을 하나 이상 선택해주세요.");
+        return;
+      }
+
+      const requestBlob = new Blob(requestJson, { type: 'application/json' });
+      formData.append('request', requestBlob, 'request.json');
+
+      fetchCall(formData, headerValues);
+
+    }
+
+
+    function fetchCall(formData, headerValues) {
+      fetch('/api/meta/publish', { // 서버 업로드 엔드포인트
+        headers: headerValues, // CSRF 토큰 헤더 포함
         method: 'POST',
-        body: formData
+        body: formData, // FormData 객체 전송 (Content-Type은 브라우저가 자동으로 설정)
       })
               .then(response => {
                 if (!response.ok) {
-                  // 서버 응답이 실패(4xx, 5xx)했을 경우 에러 처리
-                  throw new Error(`HTTP error! status: ${response.status}`);
+
+                  return response.text().then(text => {
+                    let errorMessage = `HTTP error! status: ${response.status}`;
+                    try {
+                      // 서버가 JSON 형태의 에러 메시지를 보냈을 경우 파싱 시도
+                      const errorData = JSON.parse(text);
+                      errorMessage += `, message: ${errorData.message || errorData.error || text}`;
+                    } catch (e) {
+                      // JSON 파싱 실패 시 그냥 텍스트 사용
+                      errorMessage += `, message: ${text}`;
+                    }
+                    throw new Error(errorMessage);
+                  });
                 }
-                return response.json(); // JSON 파싱
+
+                return response.json();
               })
-              .then(resData => {
-                // 서버로부터 받은 데이터로 그리드 업데이트
-                console.log("업로드 성공 및 데이터 수신:", resData);
-                if (gridApi && resData) {
-                  excelData = resData;
-                  gridApi.setGridOption('rowData', resData.data);
-
-                } else {
-                  console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
-                }
-
-                gridApi.hideOverlay();
+              .then(data => {
+                console.log('Upload success:', data);
+                // 성공 시 처리 로직 (예: 그리드 업데이트, 알림 표시 등)
+                alert('데이터 및 파일 전송 성공!');
+                // 필요하다면 성공 후 그리드 초기화 또는 상태 업데이트
+                // gridApi.setGridOption('rowData', []); // 예시: 성공 후 그리드 비우기
               })
               .catch(error => {
-                // 에러 처리
-                console.error("파일 업로드 또는 처리 중 에러 발생:", error);
-                alert(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
-                gridApi.hideOverlay();
+                console.error('Upload error:', error);
+                // 에러 시 처리 로직 (예: 사용자에게 에러 알림)
+                alert(`데이터 및 파일 전송 중 오류 발생: ${error.message}`);
               });
-    });
-  }); // DOMContentLoaded listener 끝
-</script>
+    }
 
-</th:block>
+    class CustomButtonComponent {
+      eGui;
+      eButton;
+      eventListener;
+
+      init() {
+        this.eGui = document.createElement("div");
+        const eButton = document.createElement("input");
+        eButton.setAttribute("type", "file");
+        eButton.setAttribute("name", "files");
+        eButton.setAttribute("multiple", "multiple");
+        eButton.textContent = "파일 업로드";
+        //eButton.className = "primary-btn btn-hover simple-btn";
+        //this.eventListener = () => FileUpload(this.eGui);// 파일업로드 올리기
+        //eButton.addEventListener("click", this.eventListener);
+        this.eGui.appendChild(eButton);
+      }
+
+      getGui() {
+        return this.eGui;
+      }
+
+      refresh() {
+        return true;
+      }
+
+      destroy() {
+        if (this.eButton) {
+          this.eButton.removeEventListener("click", this.eventListener);
+        }
+      }
+    }
+
+    const gridOptions = {
+
+      rowData: [],
+
+      columnDefs: [
+        {
+          headerName: "파일 업로드",
+          field: "button",
+          cellRenderer: CustomButtonComponent,
+          flex: 1,
+          minWidth: 200
+        },
+        {
+          headerName: "캠페인 목표(선택)",
+          field: "metaCampaignObjective",
+          editable: true,
+          flex: 1,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: {
+            values: [
+              "판매",
+              "트래픽"
+            ],
+          },
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "캠페인 형태(선택)",
+          field: "metaCampaignType",
+          editable: true,
+          flex: 1,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: {
+            values: [
+              "ABO",
+              "ASC",
+              "CBO",
+            ],
+          },
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "픽셀(선택)",
+          field: "pixelId",
+          editable: true,
+          flex: 1,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: {
+            values: [],
+          },
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "형식(선택)",
+          field: "metaCreativeFormat",
+          editable: true,
+          flex: 1,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: {
+            values: [
+              "단일 이미지·동영상",
+              "슬라이드",
+            ],
+          },
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "광고 계정명",
+          field: "adAccountName",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+
+        {
+          headerName: "캠페인명",
+          field: "campaignName",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "예산",
+          field: "budget",
+
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "시작날짜",
+          field: "startDate",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "시작 시간",
+          field: "startTime",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "위치",
+          field: "location",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "언어",
+          field: "language",
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "성별",
+          field: "gender",
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "최소 연령",
+          field: "minAge",
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "최대 연령",
+          field: "maxAge",
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "세트명",
+          field: "setName",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "광고소재명",
+          field: "adMaterialName",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "업로드 페이지명",
+          field: "uploadPage",
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+
+        {
+          headerName: "랜딩페이지 URL",
+          field: "landingUrl",
+          editable: true,
+          flex: 1,
+          minWidth: 150, maxWidth: 300
+        },
+        {
+          headerName: "표시링크 URL",
+          field: "displayUrl",
+          editable: true,
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "기본 문구",
+          field: "defaultText",
+          editable: true,
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "제목",
+          field: "title",
+          editable: true,
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "설명",
+          field: "description",
+          editable: true,
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+        {
+          headerName: "기타 요청사항",
+          field: "otherRequests",
+          editable: true,
+          flex: 1,
+          minWidth: 100, maxWidth: 300
+        },
+      ],
+
+      rowClassRules: {
+        // apply red to Ford cars
+        "rag-green": (params) => params.data.agSelectCellEditor === "ASC",
+      },
+      /*rowData: getData(), 이거로 불러서 데이터 뿌려주기*/
+      autoSizeStrategy: {
+        type: "fitGridWidth",
+      },
+      onGridReady: (params) => {
+        minRowHeight = params.api.getSizesForCurrentTheme().rowHeight;
+        currentRowHeight = minRowHeight;
+      },
+
+      getRowHeight: (params) => {
+        return currentRowHeight;
+      },
+    };
+
+    let excelData =[];//확인용
+    document.addEventListener("DOMContentLoaded", function () {
+      const gridDiv = document.querySelector("#myGrid");
+      // gridApi를 여기서 초기화합니다.
+      gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+      const Input = document.getElementById('excelInput');
+      const uploadButton = document.getElementById('uploadButton');
+      let selectedFile;
+
+      Input.addEventListener('change', function (event) {
+        selectedFile = event.target.files[0];
+        // (선택 사항) 파일이 선택되면 버튼 활성화 등의 로직 추가 가능
+        if(selectedFile) {
+          console.log("파일 선택됨:", selectedFile.name);
+          // uploadButton.disabled = false; // 예시: 버튼 활성화
+        }
+      });
+
+      // 업로드 버튼 클릭 시 실행될 로직
+      uploadButton.addEventListener('click', function() {
+        // 파일이 선택되었는지 확인
+        if (!selectedFile) {
+          alert('업로드할 엑셀 파일을 먼저 선택해주세요.');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        let headerValues = {};
+        if (csrfHeader && csrfToken) {
+          headerValues[csrfHeader] = csrfToken;
+        }
+
+        console.log("파일 업로드 시작...");
+        gridApi.showLoadingOverlay();
+
+        fetch('/api/meta/upload', {
+          headers: headerValues,
+          method: 'POST',
+          body: formData
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    // 서버 응답이 실패(4xx, 5xx)했을 경우 에러 처리
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+                  return response.json(); // JSON 파싱
+                })
+                .then(resData => {
+                  // 서버로부터 받은 데이터로 그리드 업데이트
+                  console.log("업로드 성공 및 데이터 수신:", resData);
+                  if (gridApi && resData) {
+                    excelData = resData;
+                    gridApi.setGridOption('rowData', resData.data);
+
+                  } else {
+                    console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
+                  }
+
+                  gridApi.hideOverlay();
+                })
+                .catch(error => {
+                  // 에러 처리
+                  console.error("파일 업로드 또는 처리 중 에러 발생:", error);
+                  alert(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
+                  gridApi.hideOverlay();
+                });
+      });
+    }); // DOMContentLoaded listener 끝
+  </script>
+  <th:block layout:fragment="script">
+
+  </th:block>
 
 </body>
 
