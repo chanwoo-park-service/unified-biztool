@@ -585,6 +585,50 @@
                 });
       });
     }); // DOMContentLoaded listener 끝
+    class AdRequestDto {
+      constructor(data = {}) {
+        this.index = data.index || null;
+        this.metaCampaignObjective = data.metaCampaignObjective || null;
+        this.metaCampaignType = data.metaCampaignType || null;
+        this.adAccountName = data.adAccountName || null;
+        this.adAccountId = data.adAccountId || null;
+        this.pixelId = data.pixelId || null;
+        this.campaignName = data.campaignName || null;
+        this.campaignId = data.campaignId || null;
+        this.budget = data.budget || null;
+        this.startDate = data.startDate || null;
+        this.startTime = data.startTime || null;
+        this.location = data.location || null;
+        this.language = data.language || null;
+        this.gender = data.gender || null;
+        this.minAge = data.minAge || null;
+        this.maxAge = data.maxAge || null;
+        this.setName = data.setName || null;
+        this.setId = data.setId || null;
+        this.adMaterialName = data.adMaterialName || null;
+        this.pageId = data.pageId || null;
+        this.metaCreativeFormat = data.metaCreativeFormat || null;
+        this.landingUrl = data.landingUrl || null;
+        this.displayUrl = data.displayUrl || null;
+        this.defaultText = data.defaultText || null;
+        this.title = data.title || null;
+        this.description = data.description || null;
+        this.otherRequests = data.otherRequests || null;
+        this.blank = data.blank || null;
+        this.adCode = data.adCode || null;
+        this.isShortUrlCreate = data.isShortUrlCreate || null;
+        this.shortUrl = data.shortUrl || null;
+        this.pageResolved = false;
+        this.adAccountResolved = false;
+        this.campaignResolved = false;
+        this.setResolved = false;
+        this.pixelResolved = false;
+      }
+      toJSON() {
+        return JSON.stringify(this);
+      }
+    }
+
   </script>
   <th:block layout:fragment="script">
 
