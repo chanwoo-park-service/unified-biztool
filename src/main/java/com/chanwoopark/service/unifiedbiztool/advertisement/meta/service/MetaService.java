@@ -296,6 +296,29 @@ public class MetaService {
         );
     }
 
+    private List<Campaign> getCampaigns(AdRequest adRequest, String accountId, String accessToken) {
+        String campaignUrl = META_URL
+                + "/v22.0/"
+                + Objects.requireNonNull(accountId)
+                + "/campaigns";
+
+        String campaignQueryParameters = "&fields=id,name,objective,status,special_ad_categories,start_time,daily_budget"
+                + "&limit=1000";
+
+        return getOrCreateResource(
+                accountId,
+                campaignUrl,
+                campaignQueryParameters,
+                accessToken,
+                adRequest.getCampaignName(),
+                Campaign.class,
+                Campaign::getName,
+                () -> CampaignsParameters.toForm(
+                        CampaignsParameters.fromAdRequest(adRequest, accessToken)
+                )
+        );
+    }
+
     private List<Set> getSets(ExcelRowDto excelRowDto, String accountId, String accessToken) {
         String setUrl = META_URL
                 + "/v22.0/"
@@ -316,6 +339,33 @@ public class MetaService {
                 () -> SetsParameters.toForm(
                         SetsParameters.fromExcel(
                                 excelRowDto,
+                                accessToken
+                        ),
+                        objectMapper
+                )
+        );
+    }
+
+    private List<Set> getSets(AdRequest adRequest, String accountId, String accessToken) {
+        String setUrl = META_URL
+                + "/v22.0/"
+                + Objects.requireNonNull(accountId)
+                + "/adsets";
+
+        String setQueryParameters = "&fields=id,name,optimization_goal,billing_event,bid_amount,campaign_id,targeting,status,start_time,promoted_object"
+                + "&limit=1000";
+
+        return getOrCreateResource(
+                accountId,
+                setUrl,
+                setQueryParameters,
+                accessToken,
+                adRequest.getSetName(),
+                Set.class,
+                Set::getName,
+                () -> SetsParameters.toForm(
+                        SetsParameters.fromAdRequest(
+                                adRequest,
                                 accessToken
                         ),
                         objectMapper
@@ -440,6 +490,10 @@ public class MetaService {
     }
 
     public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files, List<MultipartFile> thumbnails) throws JsonProcessingException {
+        if (!adRequest.isAdAccountResolved() || !adRequest.isCampaignResolved() || !adRequest.isSetResolved() || !adRequest.isPageResolved() || !adRequest.isPixelResolved()) {
+            retryResolveMetaEntities(adRequest);
+        }
+
         String accessToken = platformTokenService.getToken(Platform.META);
         List<CompletableFuture<UploadResult>> futureResults = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
@@ -638,6 +692,81 @@ public class MetaService {
         return attachment;
     }
 
+    private void retryResolveMetaEntities(AdRequest adRequest) {
+        String accessToken = platformTokenService.getToken(Platform.META);
+        if (!adRequest.isAdAccountResolved()) {
+            String accountsUrl = META_URL + "/v22.0/me/adaccounts?access_token="
+                    + accessToken
+                    + "&fields=id,name,business_name,account_status"
+                    + "&limit=1000";
+            List<AdAccount> accountList = getResource(
+                    accountsUrl,
+                    AdAccount.class,
+                    AdAccount::getName,
+                    adRequest.getAdAccountName(),
+                    null
+            );
+            if (accountList.size() != 1) {
+                throw new RuntimeException("광고게정이 하나로 특정되지 않았습니다. 조회된 광고계정은 " + accountList.size() + "개 입니다.");
+            }
+            adRequest.setAdAccountId(accountList.get(0).getId());
+        }
+
+        if (!adRequest.isPixelResolved()) {
+            List<Pixel> pixelList = getPixels(
+                    adRequest.getAdAccountId(),
+                    accessToken
+            );
+            if (pixelList.size() != 1) {
+                throw new RuntimeException("픽셀이 하나로 특정되지 않았습니다. 조회된 픽셀은 " + pixelList.size() + "개 입니다.");
+            }
+            adRequest.setPixelId(pixelList.get(0).getId());
+        }
+
+        if (!adRequest.isCampaignResolved()) {
+            List<Campaign> campaignList = getCampaigns(
+                    adRequest,
+                    adRequest.getAdAccountId(),
+                    accessToken
+            );
+            if (campaignList.size() != 1) {
+                throw new RuntimeException("캠페인이 하나로 특정되지 않았습니다. 조회된 캠페인은 " + campaignList.size() + "개 입니다.");
+            }
+            adRequest.setCampaignId(campaignList.get(0).getId());
+        }
+
+        if (!adRequest.isSetResolved()) {
+            List<Set> setList = getSets(
+                    adRequest,
+                    adRequest.getAdAccountId(),
+                    accessToken
+            );
+            if (setList.size() != 1) {
+                throw new RuntimeException("세트가 하나로 특정되지 않았습니다. 조회된 캠페인은 " + setList.size() + "개 입니다.");
+            }
+            adRequest.setCampaignId(setList.get(0).getId());
+        }
+
+        if (!adRequest.isPageResolved()) {
+            String pageUrl = META_URL
+                    + "/v22.0/me/accounts?access_token="
+                    + accessToken
+                    + "&fields=link,picture,name,id"
+                    + "&limit=1000";
+
+            List<Page> pageList = getResource(
+                    pageUrl,
+                    Page.class,
+                    Page::getId,
+                    adRequest.getUploadPageName(),
+                    adRequest.getAdAccountId()
+            );
+            if (pageList.size() != 1) {
+                throw new RuntimeException("페이지가 하나로 특정되지 않았습니다. 조회된 페이지는 " + pageList.size() + "개 입니다.");
+            }
+            adRequest.setPageId(pageList.get(0).getId());
+        }
+    }
     public List<MetaAccountResponse> getAccounts() {
         String accessToken = platformTokenService.getToken(Platform.META);
         String response = httpClientHelper.get(
