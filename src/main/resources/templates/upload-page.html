@@ -152,6 +152,20 @@
 
   <!-- 6. 페이지별 스크립트가 필요하면 여기에 추가 -->
   <script>
+    window.addEventListener('beforeunload', function (e) {
+      // 취소 메시지 설정 (브라우저마다 다르게 표시될 수 있음)
+      const confirmationMessage = '변경사항이 저장되지 않을 수 있습니다. 정말 페이지를 떠나시겠습니까?';
+
+      // 표준 방식 (대부분의 브라우저)
+      e.preventDefault();
+
+      // 이전 방식 (이전 브라우저 호환성)
+      (e || window.event).returnValue = confirmationMessage;
+
+      // 일부 브라우저에서는 반환 값도 필요
+      return confirmationMessage;
+    });
+
     let minRowHeight = 150;
     let currentRowHeight;
     let gridApi;
@@ -540,27 +554,25 @@
         console.log("파일 업로드 시작...");
         gridApi.showLoadingOverlay();
 
-        fetch('/api/meta/upload', {
-          headers: headerValues,
-          method: 'POST',
-          body: formData
-        })
-                .then(response => {
-                  if (!response.ok) {
-                    // 서버 응답이 실패(4xx, 5xx)했을 경우 에러 처리
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                  }
-                  return response.json(); // JSON 파싱
-                })
-                .then(resData => {
-                  // 서버로부터 받은 데이터로 그리드 업데이트
+          fetchWithSpinner(
+              '/api/meta/upload',
+              {
+                  headers: headerValues,
+                  method: 'POST',
+                  body: formData
+              },
+              "excelSaving",
+              true, // JSON 파싱
+              "엑셀 업로드 성공!", // 성공 메시지
+              "엑셀 업로드 실패" // 실패 메시지
+          )
+              .then(resData => {
                   console.log("업로드 성공 및 데이터 수신:", resData);
                   if (gridApi && resData) {
-                    excelData = resData;
-                    gridApi.setGridOption('rowData', resData.data);
-
+                      excelData = resData;
+                      gridApi.setGridOption('rowData', resData.data);
                   } else {
-                    console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
+                      console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
                   }
 
                   gridApi.hideOverlay();
@@ -577,7 +589,7 @@
   <th:block layout:fragment="script">
 
   </th:block>
-
+</div>
 </body>
 
 </html>
