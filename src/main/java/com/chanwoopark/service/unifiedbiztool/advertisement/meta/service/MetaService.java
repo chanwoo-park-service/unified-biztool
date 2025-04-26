@@ -2,6 +2,7 @@ package com.chanwoopark.service.unifiedbiztool.advertisement.meta.service;
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.HttpClientException;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.InvalidExcelFormatException;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.exception.RetryFailedException;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.Set;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
@@ -707,7 +708,7 @@ public class MetaService {
                     null
             );
             if (accountList.size() != 1) {
-                throw new RuntimeException("광고게정이 하나로 특정되지 않았습니다. 조회된 광고계정은 " + accountList.size() + "개 입니다.");
+                throw new RetryFailedException(RetryFailedException.EntityType.AD_ACCOUNT, accountList.size());
             }
             adRequest.setAdAccountId(accountList.get(0).getId());
         }
@@ -718,7 +719,7 @@ public class MetaService {
                     accessToken
             );
             if (pixelList.size() != 1) {
-                throw new RuntimeException("픽셀이 하나로 특정되지 않았습니다. 조회된 픽셀은 " + pixelList.size() + "개 입니다.");
+                throw new RetryFailedException(RetryFailedException.EntityType.PIXEL, pixelList.size());
             }
             adRequest.setPixelId(pixelList.get(0).getId());
         }
@@ -730,7 +731,7 @@ public class MetaService {
                     accessToken
             );
             if (campaignList.size() != 1) {
-                throw new RuntimeException("캠페인이 하나로 특정되지 않았습니다. 조회된 캠페인은 " + campaignList.size() + "개 입니다.");
+                throw new RetryFailedException(RetryFailedException.EntityType.CAMPAIGN, campaignList.size());
             }
             adRequest.setCampaignId(campaignList.get(0).getId());
         }
@@ -742,7 +743,7 @@ public class MetaService {
                     accessToken
             );
             if (setList.size() != 1) {
-                throw new RuntimeException("세트가 하나로 특정되지 않았습니다. 조회된 캠페인은 " + setList.size() + "개 입니다.");
+                throw new RetryFailedException(RetryFailedException.EntityType.SET, setList.size());
             }
             adRequest.setCampaignId(setList.get(0).getId());
         }
@@ -762,7 +763,7 @@ public class MetaService {
                     adRequest.getAdAccountId()
             );
             if (pageList.size() != 1) {
-                throw new RuntimeException("페이지가 하나로 특정되지 않았습니다. 조회된 페이지는 " + pageList.size() + "개 입니다.");
+                throw new RetryFailedException(RetryFailedException.EntityType.PAGE, pageList.size());
             }
             adRequest.setPageId(pageList.get(0).getId());
         }
