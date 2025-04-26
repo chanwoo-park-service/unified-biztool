@@ -187,14 +187,42 @@ function hideSpinner(success = true, finalMessage = '') {
   }
 }
 
-function fetchWithSpinner(url, options = {}, taskType = 'loading') {
+function fetchWithSpinner(url, options = {}, taskType = 'loading',
+                          parseJson = true, successMessage = '', errorMessage = '요청 처리 중 오류가 발생했습니다') {
   showSpinner(taskType);
 
   return fetch(url, options)
       .then(response => {
-        return response.json();
+        if (!response.ok) {
+          return response.text().then(text => {
+            try {
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.message || errorData.error || `HTTP 오류: ${response.status}`);
+            } catch (e) {
+              throw new Error(`HTTP 오류: ${response.status} - ${text || response.statusText}`);
+            }
+          });
+        }
+
+        if (parseJson) {
+          return response.json().catch(err => {
+            throw new Error('JSON 파싱 오류: ' + err.message);
+          });
+        }
+
+        return response;
       })
-      .finally(() => {
-        hideSpinner();
+      .then(data => {
+        if (successMessage) {
+          hideSpinner(true, successMessage);
+        } else {
+          hideSpinner(true);
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Fetch 오류:', error);
+        hideSpinner(false, errorMessage || error.message);
+        throw error;
       });
 }
