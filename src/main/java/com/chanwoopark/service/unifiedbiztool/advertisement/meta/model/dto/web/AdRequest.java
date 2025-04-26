@@ -5,6 +5,7 @@ import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.Met
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaCreativeFormat;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,15 +24,18 @@ public class AdRequest {
     @NotNull(message = "{adRequest.adAccountName.notnull}")
     private String adAccountName;
 
+    @Setter
     @NotNull(message = "{adRequest.adAccountId.notnull}")
     private String adAccountId;
 
+    @Setter
     @NotNull(message = "{adRequest.pixelId.notnull}")
     private String pixelId;
 
     @NotNull(message = "{adRequest.campaignName.notnull}")
     private String campaignName;
 
+    @Setter
     @NotNull(message = "{adRequest.campaignId.notnull}")
     private String campaignId;
 
@@ -62,12 +66,17 @@ public class AdRequest {
     @NotNull(message = "{adRequest.setName.notnull}")
     private String setName;
 
+    @Setter
     @NotNull(message = "{adRequest.setId.notnull}")
     private String setId;
 
     @NotNull(message = "{adRequest.adMaterialName.notnull}")
     private String adMaterialName;
 
+    @NotNull()
+    private String uploadPageName;
+
+    @Setter
     @NotNull(message = "{adRequest.pageId.notnull}")
     private String pageId;
 
