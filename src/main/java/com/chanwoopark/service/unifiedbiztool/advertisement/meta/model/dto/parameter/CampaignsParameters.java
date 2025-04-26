@@ -1,6 +1,7 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.parameter;
 
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.excel.ExcelRowDto;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.web.AdRequest;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,6 +39,22 @@ public class CampaignsParameters {
 
         if (excelRowDto.getMetaCampaignType() == MetaCampaignType.CBO || excelRowDto.getMetaCampaignType() == MetaCampaignType.ASC) {
             parameters.setBudget(excelRowDto.getBudget());
+        }
+
+        return parameters;
+    }
+
+    public static CampaignsParameters fromAdRequest(AdRequest adRequest, String accessToken) {
+        CampaignsParameters parameters = CampaignsParameters.builder()
+                .name(adRequest.getCampaignName())
+                .objective(adRequest.getMetaCampaignObjective())
+                .status(MetaAdStatus.PAUSED)
+                .accessToken(accessToken)
+                .specialAdCategory(MetaSpecialAdCategory.NONE)
+                .build();
+
+        if (adRequest.getMetaCampaignType() == MetaCampaignType.CBO || adRequest.getMetaCampaignType() == MetaCampaignType.ASC) {
+            parameters.setBudget(adRequest.getBudget());
         }
 
         return parameters;

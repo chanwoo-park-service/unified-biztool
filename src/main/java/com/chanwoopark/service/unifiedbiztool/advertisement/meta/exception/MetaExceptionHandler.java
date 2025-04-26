@@ -34,6 +34,22 @@ public class MetaExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RetryFailedException.class)
+    public ResponseEntity<ErrorResponse> handleRetryFailedException(HttpServletRequest httpServletRequest, RetryFailedException ex) {
+        log.error("재시도 실패 발생: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .path(httpServletRequest.getRequestURI())
+                .build();
+
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(HttpClientException.class)
     public ResponseEntity<ErrorResponse> handleHttpClientException(HttpClientException ex, HttpServletRequest httpServletRequest) {
         log.error(ex.getMessage());
