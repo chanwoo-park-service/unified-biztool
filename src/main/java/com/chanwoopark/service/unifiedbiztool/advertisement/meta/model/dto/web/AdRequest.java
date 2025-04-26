@@ -97,4 +97,11 @@ public class AdRequest {
     private String adCode;
     private String isShortUrlCreate;
     private String shortUrl;
+
+    //flag
+    private boolean adAccountResolved;
+    private boolean pageResolved;
+    private boolean campaignResolved;
+    private boolean setResolved;
+    private boolean pixelResolved;
 }
