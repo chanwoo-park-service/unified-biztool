@@ -16,26 +16,6 @@
           <h2>광고자동화 - META</h2>
         </div>
       </div>
-
-      <form enctype="multipart/form-data">
-
-        <div class="menu-toggle-btn mr-15">
-          <button type="button" id="uploadButton" >Upload</button>
-          <button type="button" th:onclick="FileUpload()" >메타전송</button>
-          <input type="file" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx">
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap">Open modal for @getbootstrap</button>
-        </div>
-
-      </form>
-
-
-
-
-
-
-
-
-
       <!-- end col -->
       <div class="col-md-12">
         <div class="breadcrumb-wrapper">
@@ -52,6 +32,16 @@
           </nav>
         </div>
       </div>
+
+      <form enctype="multipart/form-data">
+        <div class="menu-toggle-btn mr-15 d-flex align-items-center">
+          <button type="button" class="btn btn-primary me-2" id="uploadButton">엑셀 업로드</button> <!-- me-2: 오른쪽 마진 추가 -->
+          <input type="file" class="form-control" style="width: 50%" name="file" id="excelInput" accept=".xlsx, .xlsm, .xlsb, .xltx" >
+          <!--          <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal">Open modal</button>-->
+          <button type="button" class="btn btn-danger ms-auto" th:onclick="openModeal()">광고 등록</button>
+        </div>
+        <!-- </form> -->
+      </form>
       <!-- end col -->
     </div>
     <!-- end row -->
@@ -59,96 +49,43 @@
   <!-- ========== title-wrapper end ========== -->
 
   <!-- ========== tables-wrapper start ========== -->
-  <div id="myGrid" style="width: 100%; height: 500px">
+  <div id="myGrid" style="width: 100%; height: 500px; margin-top: 20px;">
 
     <!-- end row -->
 
     <!-- ========== tables-wrapper end ========== -->
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">선택창</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form>
-              <div class="sm-4">
-                <label for="recipient-name" class="col-form-label">Recipient:</label>
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
+            <div class="container">
+              <div class="row">
+                <div class="row mb-3">
+                  <div class="col-md-3"><label class="form-label">광고 계정 목록</label></div>
+                  <div class="col-md-3"><label class="form-label">캠페인 목록</label></div>
+                  <div class="col-md-3"><label class="form-label">픽셀 목록</label></div>
+                  <div class="col-md-3"><label class="form-label">세트 목록</label></div>
+                </div>
               </div>
-
-              <div class="mb-3">
-                <label for="message-text" class="col-form-label">Message:</label>
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-
-                <select class="form-select" aria-label="Default select example">
-                  <option selected>Open this select menu</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
+              <div class="row" id="selectData">
               </div>
-            </form>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Send message</button>
+            <button type="button" onclick="metaSubmit()" class="btn btn-primary">META 전송</button>
           </div>
         </div>
       </div>
     </div>
 
   </div> <!-- layout:fragment="content" 끝 -->
-  <th:block layout:fragment="style">
-    <style>
-      input[type=file]::file-selector-button {
-        width: 150px;
-        height: 30px;
-        background: #fff;
-        border: 1px solid rgb(77,77,77);
-        border-radius: 10px;
-        cursor: pointer;
-        line-height: normal;
-        &:hover {
-          background: rgb(77,77,77);
-          color: #fff;
-        }
-      }
-    </style>
-  </th:block>
+
 
   <!-- 6. 페이지별 스크립트가 필요하면 여기에 추가 -->
   <script>
@@ -169,73 +106,146 @@
     let minRowHeight = 150;
     let currentRowHeight;
     let gridApi;
+    let campaignList = [];
+    let pixelList = [];
+    let adAccountList = [];
+    let setList = [];
+    let selectData = document.getElementById('selectData');
+    function openModeal(){
+      selectData.innerHTML = ''; // modal 초기화
+      const rowDataArray = gridApi.getGridOption('rowData'); // 배열 가져오기
 
-    function FileUpload() {
-      /*비번 ehdydgkwlak!2
-      리스트 형태
-      adAccountList
-      adAccountName
-
-      campaignList
-      campaignId를 넘김
-      campaignName 필드값
-      campaignResolved 여부
-
-      pixelList
-      pixelResolved
-
-      setList
-      setName
-      setResolved*/
-
-      const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
-      let headerValues = {};
-      if (csrfHeader && csrfToken) {
-        headerValues[csrfHeader] = csrfToken;
+      if (!rowDataArray || rowDataArray.length === 0) {
+        alert("엑셀 데이터를 먼저 업로드하고 그리드를 채워주세요.");
+        return; // 데이터 없으면 모달 열지 않음
       }
 
+      // forEach 루프에서 index 파라미터 사용
+      rowDataArray.forEach((rowData, index) => { // <<<--- rowData와 index 받기
+
+        // 각 행의 리스트 가져오기
+        const currentAdAccountList = rowData.adAccountList || [];
+        const currentCampaignList = rowData.campaignList || [];
+        const currentPixelList = rowData.pixelList || [];
+        const currentSetList = rowData.setList || [];
+
+        // HTML 생성 시 index 사용
+        selectData.innerHTML +=
+                '<div class="row mb-2">' // 각 행 사이에 약간의 마진 추가 (선택적)
+                + `<div class="col-md-3"><select class="form-select" id="adAccountList_${index}" name="adAccountList_${index}"><option value="">-- 광고 계정 ${index + 1} --</option></select></div>` // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="campaignList_${index}" name="campaignList_${index}"><option value="">-- 캠페인 ${index + 1} --</option></select></div>` // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="pixelList_${index}" name="pixelList_${index}"><option value="">-- 픽셀 ${index + 1} --</option></select></div>`       // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="setList_${index}" name="setList_${index}"><option value="">-- 세트 ${index + 1} --</option></select></div>`             // index 사용
+                + '</div>';
+
+        // 옵션 추가 시 index 사용 (createElement 사용 권장하지만 일단 innerHTML 유지)
+        const adAccountSelect = document.getElementById(`adAccountList_${index}`);
+        if (adAccountSelect) {
+          currentAdAccountList.forEach(a => {
+            // 주의: value에 특수문자가 있으면 문제가 될 수 있음. createElement가 더 안전함.
+            adAccountSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+          });
+        }
+
+        const campaignSelect = document.getElementById(`campaignList_${index}`);
+        if (campaignSelect) {
+          currentCampaignList.forEach(c => {
+            campaignSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+          });
+        }
+
+        const pixelSelect = document.getElementById(`pixelList_${index}`);
+        if (pixelSelect) {
+          currentPixelList.forEach(p => {
+            pixelSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+          });
+        }
+
+        const setSelect = document.getElementById(`setList_${index}`);
+        if (setSelect) {
+          currentSetList.forEach(s => {
+            setSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+          });
+        }
+      }); // forEach 루프 끝
+
+      // 모달 열기
+      new bootstrap.Modal(document.querySelector('#exampleModal')).show();
+    }
+
+
+
+    function metaSubmit() {
       const allRowData = gridApi.getGridOption("rowData");
       if (!allRowData || allRowData.length === 0) {
         alert("전송할 데이터가 없습니다.");
         return;
       }
 
-      let requestJson ;
+      // map 루프 안에서 각 행별로 모달 값 읽기
+      const processedData = allRowData.map((row, rowIndex) => { // <<<--- rowIndex 사용
+        const newRow = { ...row };
+
+        // 현재 행 인덱스(rowIndex)를 사용하여 해당 모달 행의 ID 생성 및 값 읽기
+        const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
+        const selectedCampaignIdForRow = document.getElementById(`campaignList_${rowIndex}`)?.value;
+        const selectedPixelIdForRow = document.getElementById(`pixelList_${rowIndex}`)?.value;
+        const selectedSetIdForRow = document.getElementById(`setList_${rowIndex}`)?.value;
+
+        // (디버깅용) 행별 선택 값 확인
+        console.log(`Row ${rowIndex} - Selected Ad Account: ${selectedAdAccountIdForRow}, Campaign: ${selectedCampaignIdForRow}, Pixel: ${selectedPixelIdForRow}, Set: ${selectedSetIdForRow}`);
+
+        // 읽어온 행별 선택값을 해당 그리드 행에 적용
+        newRow.adAccountId = selectedAdAccountIdForRow || newRow.adAccountId;
+        newRow.campaignId = selectedCampaignIdForRow || newRow.campaignId;
+        newRow.pixelId = selectedPixelIdForRow || newRow.pixelId;
+        newRow.setId = selectedSetIdForRow || newRow.setId;
+
+        // 서버 전송에 불필요한 리스트 데이터 제거
+        delete newRow.adAccountList;
+        delete newRow.campaignList;
+        delete newRow.pixelList;
+        delete newRow.setList;
+
+        return newRow;
+      });
+
+      const requestJson = JSON.stringify(processedData);
+      console.log("Processed data for sending:", requestJson);
 
       const formData = new FormData();
 
+      // 파일 추가 로직
       let filesAttached = false;
-
       const fileInputs = document.querySelectorAll('#myGrid input[type="file"][name="files"]');
-
-      fileInputs.forEach((input, index) => {
+      fileInputs.forEach((input) => {
         if (input.files && input.files.length > 0) {
           for (let i = 0; i < input.files.length; i++) {
-
             formData.append('files', input.files[i]);
-
             filesAttached = true;
           }
         }
       });
-      requestJson = JSON.stringify(allRowData[i]);
-      if (!filesAttached) {
-        alert("업로드할 파일을 하나 이상 선택해주세요.");
-        return;
+
+      formData.append('request', requestJson);
+
+      // 서버 전송
+      fetchCall(formData);
+
+      // 모달 닫기
+      const modalElement = document.getElementById('exampleModal');
+      const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
+      if (bootstrapModal) {
+        bootstrapModal.hide();
       }
-
-      const requestBlob = new Blob(requestJson, { type: 'application/json' });
-      formData.append('request', requestBlob, 'request.json');
-
-      fetchCall(formData, headerValues);
-
     }
 
 
-    function fetchCall(formData, headerValues) {
+
+    function fetchCall(formData) {
       fetch('/api/meta/publish', { // 서버 업로드 엔드포인트
-        headers: headerValues, // CSRF 토큰 헤더 포함
+        headers: {'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')}, // CSRF 토큰 헤더 포함
         method: 'POST',
         body: formData, // FormData 객체 전송 (Content-Type은 브라우저가 자동으로 설정)
       })
@@ -282,11 +292,10 @@
         const eButton = document.createElement("input");
         eButton.setAttribute("type", "file");
         eButton.setAttribute("name", "files");
+        eButton.setAttribute("class", "form-control");
         eButton.setAttribute("multiple", "multiple");
+        eButton.setAttribute("accept", ".jpg, .jpeg, .png, .mp4, .gif");
         eButton.textContent = "파일 업로드";
-        //eButton.className = "primary-btn btn-hover simple-btn";
-        //this.eventListener = () => FileUpload(this.eGui);// 파일업로드 올리기
-        //eButton.addEventListener("click", this.eventListener);
         this.eGui.appendChild(eButton);
       }
 
@@ -314,14 +323,12 @@
           headerName: "파일 업로드",
           field: "button",
           cellRenderer: CustomButtonComponent,
-          flex: 1,
-          minWidth: 200
+          minWidth: 280
         },
         {
           headerName: "캠페인 목표(선택)",
           field: "metaCampaignObjective",
           editable: true,
-          flex: 1,
           cellEditor: "agSelectCellEditor",
           cellEditorParams: {
             values: [
@@ -329,13 +336,37 @@
               "트래픽"
             ],
           },
-          minWidth: 150, maxWidth: 300
+          minWidth: 150, maxWidth: 300,
+          valueFormatter: params => {
+            const value = params.value;
+            if (value === 'OUTCOME_SALES') {
+              return '판매';
+            } else if (value === 'OUTCOME_TRAFFIC') {
+              return '트래픽';
+            } else {
+              return value;
+            }
+          },
+          valueSetter: params => {
+            const selectedText = params.newValue;
+            const field = params.colDef.field;
+            const data = params.data;
+
+            if (selectedText === '판매') {
+              data[field] = 'OUTCOME_SALES';
+            } else if (selectedText === '트래픽') {
+              data[field] = 'OUTCOME_TRAFFIC';
+            } else {
+              // 예외 처리: 예상치 못한 값이 선택된 경우
+              data[field] = selectedText;
+            }
+            return true;
+          }
         },
         {
           headerName: "캠페인 형태(선택)",
           field: "metaCampaignType",
           editable: true,
-          flex: 1,
           cellEditor: "agSelectCellEditor",
           cellEditorParams: {
             values: [
@@ -347,21 +378,9 @@
           minWidth: 150, maxWidth: 300
         },
         {
-          headerName: "픽셀(선택)",
-          field: "pixelId",
-          editable: true,
-          flex: 1,
-          cellEditor: "agSelectCellEditor",
-          cellEditorParams: {
-            values: [],
-          },
-          minWidth: 150, maxWidth: 300
-        },
-        {
           headerName: "형식(선택)",
           field: "metaCreativeFormat",
           editable: true,
-          flex: 1,
           cellEditor: "agSelectCellEditor",
           cellEditorParams: {
             values: [
@@ -374,81 +393,119 @@
         {
           headerName: "광고 계정명",
           field: "adAccountName",
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
 
         {
           headerName: "캠페인명",
           field: "campaignName",
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
         {
           headerName: "예산",
           field: "budget",
-
-          flex: 1,
-          minWidth: 150, maxWidth: 300
+          editable: true, // 편집 기능 유지
+          minWidth: 150, maxWidth: 300,
+          // --- 원화 포맷터 추가 ---
+          valueFormatter: params => {
+            // 값이 null, undefined 또는 숫자가 아니면 빈 문자열 반환
+            if (params.value == null || isNaN(params.value)) {
+              return '';
+            }
+            // Intl.NumberFormat을 사용하여 한국 원화 형식으로 변환
+            try {
+              return new Intl.NumberFormat('ko-KR', {
+                style: 'currency',
+                currency: 'KRW'
+                // 소수점이 필요 없으면 아래 주석 해제
+                // minimumFractionDigits: 0,
+                // maximumFractionDigits: 0
+              }).format(params.value);
+            } catch (e) {
+              console.error("Error formatting currency:", e, "Value:", params.value);
+              return params.value; // 포맷팅 실패 시 원본 값 반환 (또는 다른 처리)
+            }
+          },
+          // --- (선택 사항) 타입 지정 ---
+          // 정렬, 필터링 등을 위해 숫자 타입으로 명시하는 것이 좋습니다.
+          type: 'numericColumn'
         },
         {
-          headerName: "시작날짜",
+          headerName: "시작날짜(선택)",
           field: "startDate",
-          flex: 1,
+          editable: true,
           minWidth: 150, maxWidth: 300
         },
         {
           headerName: "시작 시간",
           field: "startTime",
-          flex: 1,
+          chartDataType: 'time',
+          editable: true,
           minWidth: 150, maxWidth: 300
         },
         {
-          headerName: "위치",
+          headerName: "위치(선택)",
           field: "location",
-          flex: 1,
-          minWidth: 150, maxWidth: 300
+          editable: true,
+          cellEditor: "agSelectCellEditor",
+          minWidth: 100, maxWidth: 300,
+          cellEditorParams: {
+            values: [
+              "대한민국",
+              "일본",
+            ],
+          },
         },
         {
-          headerName: "언어",
+          headerName: "언어(선택)",
           field: "language",
-          flex: 1,
-          minWidth: 100, maxWidth: 300
+          editable: true,
+          cellEditor: "agSelectCellEditor",
+          minWidth: 100, maxWidth: 300,
+          cellEditorParams: {
+            values: [
+              "한국어",
+              "일본어",
+            ],
+          },
         },
         {
-          headerName: "성별",
+          headerName: "성별(선택)",
           field: "gender",
-          flex: 1,
-          minWidth: 100, maxWidth: 300
+          editable: true,
+          cellEditor: "agSelectCellEditor",
+          minWidth: 100, maxWidth: 300,
+          cellEditorParams: {
+            values: [
+              "모든 성별",
+              "남",
+              "여",
+            ],
+          },
         },
         {
           headerName: "최소 연령",
           field: "minAge",
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "최대 연령",
           field: "maxAge",
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "세트명",
           field: "setName",
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
         {
           headerName: "광고소재명",
           field: "adMaterialName",
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
         {
           headerName: "업로드 페이지명",
           field: "uploadPage",
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
 
@@ -456,42 +513,36 @@
           headerName: "랜딩페이지 URL",
           field: "landingUrl",
           editable: true,
-          flex: 1,
           minWidth: 150, maxWidth: 300
         },
         {
           headerName: "표시링크 URL",
           field: "displayUrl",
           editable: true,
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "기본 문구",
           field: "defaultText",
           editable: true,
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "제목",
           field: "title",
           editable: true,
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "설명",
           field: "description",
           editable: true,
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
         {
           headerName: "기타 요청사항",
           field: "otherRequests",
           editable: true,
-          flex: 1,
           minWidth: 100, maxWidth: 300
         },
       ],
@@ -514,8 +565,9 @@
       },
     };
 
-    let excelData =[];//확인용
+
     document.addEventListener("DOMContentLoaded", function () {
+
       const gridDiv = document.querySelector("#myGrid");
       // gridApi를 여기서 초기화합니다.
       gridApi = agGrid.createGrid(gridDiv, gridOptions);
@@ -569,7 +621,7 @@
               .then(resData => {
                   console.log("업로드 성공 및 데이터 수신:", resData);
                   if (gridApi && resData) {
-                      excelData = resData;
+
                       gridApi.setGridOption('rowData', resData.data);
                   } else {
                       console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
