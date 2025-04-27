@@ -205,19 +205,17 @@ public class ApiCacheService {
             ApiCache apiCache = getApiCache(apiStatusKey);
             if (isCachedDone(apiCache)) {
                 List<T> cachedResult = getFromCache(cacheKey, itemType);
-                if (cachedResult != null) {
-                    List<T> filtered = cachedResult.stream().filter(nameFilter).toList();
-                    if (!filtered.isEmpty()) {
-                        log.info("[Cache Hit during wait] {}({}) - Got result while waiting", itemType.getSimpleName(), identifier);
-                        return filtered;
-                    }
+                List<T> filtered = cachedResult.stream().filter(nameFilter).toList();
+                if (!filtered.isEmpty()) {
+                    log.info("[Cache Hit during wait] {}({}) - Got result while waiting", itemType.getSimpleName(), identifier);
+                    return filtered;
                 }
             }
 
             // 짧은 대기 후 재확인
             if (attempt < 2) {
                 try {
-                    Thread.sleep(100 * (1 << attempt));  // 100ms, 200ms 백오프
+                    Thread.sleep(100L * (1 << attempt));  // 100ms, 200ms 백오프
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -232,7 +230,7 @@ public class ApiCacheService {
             // 래치가 이미 존재하는지 확인 (대기할 래치가 있는지)
             if (latch.getCount() > 0) {
                 log.info("[Latch Wait] {}({}) - Waiting on existing latch", itemType.getSimpleName(), identifier);
-                boolean completed = latch.await(15, TimeUnit.SECONDS);  // 타임아웃 15초로 감소
+                boolean completed = latch.await(5, TimeUnit.SECONDS);  // 타임아웃 15초로 감소
 
                 // 대기 후 결과 확인
                 if (completed) {
