@@ -256,7 +256,10 @@ public class MetaService {
         };
     }
 
-    private List<Pixel> getPixels(String accountId, String accessToken) {
+    private List<Pixel> getPixels(
+            String accountId,
+            String accessToken
+    ) {
         String pixelUrl = META_URL
                 + "/v22.0/"
                 + Objects.requireNonNull(accountId)
@@ -272,6 +275,30 @@ public class MetaService {
                 accessToken,
                 Pixel.class
         );
+    }
+
+    private List<Pixel> getPixels(
+            String accountId,
+            String accessToken,
+            String nameToFind
+    ) {
+        String pixelUrl = META_URL
+                + "/v22.0/"
+                + Objects.requireNonNull(accountId)
+                + "/adspixels";
+
+        String pixelQueryParameters = "&fields=id,name,creation_time"
+                + "&limit=1000";
+
+
+
+        return getResource(
+                accountId,
+                pixelUrl,
+                pixelQueryParameters,
+                accessToken,
+                Pixel.class
+        ).stream().filter(getNameFilter(Pixel::getId, nameToFind)).toList();
     }
 
     private List<Campaign> getCampaigns(ExcelRowDto excelRowDto, String accountId, String accessToken) {
@@ -716,7 +743,8 @@ public class MetaService {
         if (!adRequest.isPixelResolved()) {
             List<Pixel> pixelList = getPixels(
                     adRequest.getAdAccountId(),
-                    accessToken
+                    accessToken,
+                    adRequest.getPixelId()
             );
             if (pixelList.size() != 1) {
                 throw new RetryFailedException(RetryFailedException.EntityType.PIXEL, pixelList.size());
