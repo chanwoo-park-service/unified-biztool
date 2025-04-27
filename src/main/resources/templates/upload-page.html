@@ -112,101 +112,115 @@
     let setList = [];
     let selectData = document.getElementById('selectData');
     function openModeal(){
+      selectData.innerHTML = ''; // modal 초기화
+      const rowDataArray = gridApi.getGridOption('rowData'); // 배열 가져오기
 
-      selectData.innerHTML = '';//modal 초기화
+      if (!rowDataArray || rowDataArray.length === 0) {
+        alert("엑셀 데이터를 먼저 업로드하고 그리드를 채워주세요.");
+        return; // 데이터 없으면 모달 열지 않음
+      }
+
+      // forEach 루프에서 index 파라미터 사용
+      rowDataArray.forEach((rowData, index) => { // <<<--- rowData와 index 받기
+
+        // 각 행의 리스트 가져오기
+        const currentAdAccountList = rowData.adAccountList || [];
+        const currentCampaignList = rowData.campaignList || [];
+        const currentPixelList = rowData.pixelList || [];
+        const currentSetList = rowData.setList || [];
+
+        // HTML 생성 시 index 사용
+        selectData.innerHTML +=
+                '<div class="row mb-2">' // 각 행 사이에 약간의 마진 추가 (선택적)
+                + `<div class="col-md-3"><select class="form-select" id="adAccountList_${index}" name="adAccountList_${index}"><option value="">-- 광고 계정 ${index + 1} --</option></select></div>` // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="campaignList_${index}" name="campaignList_${index}"><option value="">-- 캠페인 ${index + 1} --</option></select></div>` // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="pixelList_${index}" name="pixelList_${index}"><option value="">-- 픽셀 ${index + 1} --</option></select></div>`       // index 사용
+                + `<div class="col-md-3"><select class="form-select" id="setList_${index}" name="setList_${index}"><option value="">-- 세트 ${index + 1} --</option></select></div>`             // index 사용
+                + '</div>';
+
+        // 옵션 추가 시 index 사용 (createElement 사용 권장하지만 일단 innerHTML 유지)
+        const adAccountSelect = document.getElementById(`adAccountList_${index}`);
+        if (adAccountSelect) {
+          currentAdAccountList.forEach(a => {
+            // 주의: value에 특수문자가 있으면 문제가 될 수 있음. createElement가 더 안전함.
+            adAccountSelect.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+          });
+        }
+
+        const campaignSelect = document.getElementById(`campaignList_${index}`);
+        if (campaignSelect) {
+          currentCampaignList.forEach(c => {
+            campaignSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+          });
+        }
+
+        const pixelSelect = document.getElementById(`pixelList_${index}`);
+        if (pixelSelect) {
+          currentPixelList.forEach(p => {
+            pixelSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+          });
+        }
+
+        const setSelect = document.getElementById(`setList_${index}`);
+        if (setSelect) {
+          currentSetList.forEach(s => {
+            setSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+          });
+        }
+      }); // forEach 루프 끝
+
+      // 모달 열기
       new bootstrap.Modal(document.querySelector('#exampleModal')).show();
-      gridApi.getGridOption('rowData').forEach(i => {
-        adAccountList = i.adAccountList || [];
-        campaignList = i.campaignList || [];
-        pixelList = i.pixelList || [];
-        setList = i.setList || [];
-
-        selectData.innerHTML
-                 += '<div class="row">' // 셀렉트 박스 행 시작
-                 + '<div class="col-md-3"><select class="form-select" id="adAccountList" name="adAccountList"></select></div>'
-                 + '<div class="col-md-3"><select class="form-select" id="campaignList" name="campaignList"></select></div>'
-                 + '<div class="col-md-3"><select class="form-select" id="pixelList" name="pixelList"></select></div>'
-                 + '<div class="col-md-3"><select class="form-select" id="setList" name="setList"></select></div>'
-                 + '</div>'; // 셀렉트 박스 행 끝
-
-        adAccountList.forEach(a => {
-          document.getElementById("adAccountList").innerHTML += ("<option value="+a.id+">"+a.name+"</option>");
-        })
-        campaignList.forEach(c => {
-          document.getElementById("campaignList").innerHTML += "<option value="+c.id+">"+c.name+"</option>";
-        })
-        pixelList.forEach(p => {
-          document.getElementById("pixelList").innerHTML += "<option value="+p.id+">"+p.name+"</option>";
-        })
-        setList.forEach(s => {
-          document.getElementById("setList").innerHTML += "<option value="+ s.id +">"+ s.name +"</option>";
-        })
-
-
-      })
-
     }
 
 
+
     function metaSubmit() {
-
-
-      // --- 2. 그리드 데이터 가져오기 ---
       const allRowData = gridApi.getGridOption("rowData");
       if (!allRowData || allRowData.length === 0) {
         alert("전송할 데이터가 없습니다.");
         return;
       }
 
-      // --- 3. 모달에서 선택된 값 가져오기 ---
-      const selectedAdAccountId = document.getElementById('adAccountList')?.value;
-      const selectedCampaignId = document.getElementById('campaignList')?.value;
-      const selectedPixelId = document.getElementById('pixelList')?.value;
-      const selectedSetId = document.getElementById('setList')?.value;
-
-      // (디버깅용) 선택된 값 확인
-      console.log("Selected Ad Account ID:", selectedAdAccountId);
-      console.log("Selected Campaign ID:", selectedCampaignId);
-      console.log("Selected Pixel ID:", selectedPixelId);
-      console.log("Selected Set ID:", selectedSetId);
-
-      // --- 4. 그리드 데이터 가공 (모달 선택값 반영) ---
-      // map을 사용하여 각 행을 처리하고 새로운 배열 생성 (원본 데이터 수정 방지)
-      const processedData = allRowData.map(row => {
-        // 원본 행 객체 복사
+      // map 루프 안에서 각 행별로 모달 값 읽기
+      const processedData = allRowData.map((row, rowIndex) => { // <<<--- rowIndex 사용
         const newRow = { ...row };
 
-        // 모달에서 선택된 값이 있으면 해당 ID 필드 업데이트
-        // 선택된 값이 없으면 (value가 "" 이면) 기존 row의 값을 유지하도록 || 연산자 사용
-        newRow.adAccountId = selectedAdAccountId || newRow.adAccountId;
-        newRow.campaignId = selectedCampaignId || newRow.campaignId;
-        newRow.pixelId = selectedPixelId || newRow.pixelId;
-        newRow.setId = selectedSetId || newRow.setId;
+        // 현재 행 인덱스(rowIndex)를 사용하여 해당 모달 행의 ID 생성 및 값 읽기
+        const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
+        const selectedCampaignIdForRow = document.getElementById(`campaignList_${rowIndex}`)?.value;
+        const selectedPixelIdForRow = document.getElementById(`pixelList_${rowIndex}`)?.value;
+        const selectedSetIdForRow = document.getElementById(`setList_${rowIndex}`)?.value;
 
-        // 서버 전송에 불필요한 리스트 데이터 제거 (선택적, 서버 DTO 구조에 따라 결정)
+        // (디버깅용) 행별 선택 값 확인
+        console.log(`Row ${rowIndex} - Selected Ad Account: ${selectedAdAccountIdForRow}, Campaign: ${selectedCampaignIdForRow}, Pixel: ${selectedPixelIdForRow}, Set: ${selectedSetIdForRow}`);
+
+        // 읽어온 행별 선택값을 해당 그리드 행에 적용
+        newRow.adAccountId = selectedAdAccountIdForRow || newRow.adAccountId;
+        newRow.campaignId = selectedCampaignIdForRow || newRow.campaignId;
+        newRow.pixelId = selectedPixelIdForRow || newRow.pixelId;
+        newRow.setId = selectedSetIdForRow || newRow.setId;
+
+        // 서버 전송에 불필요한 리스트 데이터 제거
         delete newRow.adAccountList;
         delete newRow.campaignList;
         delete newRow.pixelList;
         delete newRow.setList;
 
-        // 가공된 행 데이터 반환
         return newRow;
       });
 
-      // 가공된 데이터를 JSON 문자열로 변환
       const requestJson = JSON.stringify(processedData);
-      console.log("Processed data for sending:", requestJson); // 가공된 데이터 확인
+      console.log("Processed data for sending:", requestJson);
 
-      // --- 5. FormData 생성 및 파일/데이터 추가 ---
       const formData = new FormData();
 
-      // 파일 추가 로직 (기존과 동일)
+      // 파일 추가 로직
       let filesAttached = false;
       const fileInputs = document.querySelectorAll('#myGrid input[type="file"][name="files"]');
       fileInputs.forEach((input) => {
         if (input.files && input.files.length > 0) {
           for (let i = 0; i < input.files.length; i++) {
-            // 중요: 서버에서는 파일 리스트와 JSON 데이터 리스트의 순서를 맞춰야 함
             formData.append('files', input.files[i]);
             filesAttached = true;
           }
@@ -215,16 +229,17 @@
 
       formData.append('request', requestJson);
 
-      // --- 6. 서버 전송 ---
+      // 서버 전송
       fetchCall(formData);
 
-      // --- 7. 모달 닫기 (전송 요청 후) ---
+      // 모달 닫기
       const modalElement = document.getElementById('exampleModal');
-      const bootstrapModal = bootstrap.Modal.getInstance(modalElement); // 이미 열려있으므로 getInstance 사용
+      const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
       if (bootstrapModal) {
         bootstrapModal.hide();
       }
     }
+
 
 
     function fetchCall(formData) {
