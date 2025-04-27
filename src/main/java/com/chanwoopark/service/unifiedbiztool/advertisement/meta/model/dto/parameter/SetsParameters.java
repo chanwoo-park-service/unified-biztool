@@ -99,6 +99,17 @@ public class SetsParameters {
                 .status(MetaAdStatus.PAUSED)
                 .accessToken(accessToken)
                 .startTime(formattedStartTime)
+                .targeting(
+                        Targeting.builder()
+                                .geoLocations(
+                                        Targeting.GeoLocations.builder()
+                                                .countries(MetaParameterParser.getGeoLocation(excelRowDto.getLocation()))
+                                                .build()
+                                )
+                                .genders(MetaParameterParser.getGenders(excelRowDto.getGender()))
+                                .locales(MetaParameterParser.getLocales(excelRowDto.getLanguage()))
+                                .build()
+                )
                         .build();
 
         setAge(excelRowDto.getMinAge(), excelRowDto.getMaxAge(), parameters);
@@ -161,6 +172,9 @@ public class SetsParameters {
     }
 
     private static void setAge(Integer minAge, String maxAge, SetsParameters parameters) {
+        if (parameters.getTargeting() == null) {
+            parameters.setTargeting(Targeting.builder().build());
+        }
         if (minAge != null && (isInteger(maxAge))) {
             parameters.getTargeting().setAgeMin(minAge);
             parameters.getTargeting().setAgeMax(maxAge);
