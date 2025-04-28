@@ -682,7 +682,10 @@ public class MetaService {
                                         "image_hash", image.getImageHash(),
                                         "link", adRequest.getLandingUrl(),
                                         "message", adRequest.getDefaultText(),
-                                        "description", adRequest.getDescription()
+                                        "description", adRequest.getDescription(),
+                                        "call_to_action", Map.of(
+                                                "type", "LEARN_MORE"
+                                        )
                                 )
                         )));
                     } catch (JsonProcessingException e) {
@@ -723,6 +726,9 @@ public class MetaService {
             Map<String, Object> linkData = new HashMap<>();
             linkData.put("child_attachments", childAttachments);
             linkData.put("link", adRequest.getLandingUrl());
+            linkData.put("call_to_action", Map.of(
+                    "type", "LEARN_MORE"
+            ));
 
             objectStorySpec.put("link_data", linkData);
             objectStorySpec.put("page_id", adRequest.getPageId());
@@ -742,10 +748,12 @@ public class MetaService {
         if (result.getImageHash() != null) {
             attachment.put("image_hash", result.getImageHash());
         }
-
         attachment.put("link", adRequest.getLandingUrl());
         attachment.put("name", adRequest.getTitle());
         attachment.put("caption", adRequest.getDisplayUrl());
+        attachment.put("call_to_action", Map.of(
+                "type", "LEARN_MORE"
+        ));
         return attachment;
     }
 
@@ -844,7 +852,6 @@ public class MetaService {
     }
     public void validateToken() {
         String accessToken = platformTokenService.getToken(Platform.META);
-
         healthCheck(accessToken);
     }
 
