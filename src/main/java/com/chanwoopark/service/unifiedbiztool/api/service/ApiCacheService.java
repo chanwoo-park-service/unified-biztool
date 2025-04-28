@@ -194,128 +194,35 @@ public class ApiCacheService {
         }
     }
     private <T> List<T> waitForResultWithBackoff(String identifier, Supplier<List<T>> retriever, Predicate<T> nameFilter, Class<T> itemType) {
-        String lockKey = "lock:" + identifier;
         String cacheKey = "apiResult:" + identifier;
         String apiStatusKey = "apiStatus:" + identifier;
-        String latchKey = "latch:" + identifier;
 
         // 먼저 캐시 재확인 (다른 스레드가 처리 완료했을 수 있음)
-        for (int attempt = 0; attempt < 3; attempt++) {  // 최대 3번 확인
-            // 캐시 확인 로직
+        for (int attempt = 0; attempt < 2; attempt++) {
             ApiCache apiCache = getApiCache(apiStatusKey);
             if (isCachedDone(apiCache)) {
-                List<T> cachedResult = getFromCache(cacheKey, itemType);
-                List<T> filtered = cachedResult.stream().filter(nameFilter).toList();
-                if (!filtered.isEmpty()) {
-                    log.info("[Cache Hit during wait] {}({}) - Got result while waiting", itemType.getSimpleName(), identifier);
-                    return filtered;
-                }
+                return getFilteredCacheResult(cacheKey, itemType, nameFilter);
             }
-
-            // 짧은 대기 후 재확인
-            if (attempt < 2) {
-                try {
-                    Thread.sleep(100L * (1 << attempt));  // 100ms, 200ms 백오프
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
-        // 래치 관리 개선
-        RCountDownLatch latch = redissonClient.getCountDownLatch(latchKey);
-        boolean latchInitialized = false;
+        log.warn("[Direct Fetch after Wait] {}({})", itemType.getSimpleName(), identifier);
+        List<T> result = retriever.get();
+        setCache(cacheKey, result, itemType);
+        setDone(apiStatusKey);
 
-        try {
-            // 래치가 이미 존재하는지 확인 (대기할 래치가 있는지)
-            if (latch.getCount() > 0) {
-                log.info("[Latch Wait] {}({}) - Waiting on existing latch", itemType.getSimpleName(), identifier);
-                boolean completed = latch.await(5, TimeUnit.SECONDS);  // 타임아웃 15초로 감소
-
-                // 대기 후 결과 확인
-                if (completed) {
-                    ApiCache apiCache = getApiCache(apiStatusKey);
-                    if (isCachedDone(apiCache)) {
-                        List<T> cachedResult = getFromCache(cacheKey, itemType);
-                        if (cachedResult != null) {
-                            List<T> filtered = cachedResult.stream().filter(nameFilter).toList();
-                            if (!filtered.isEmpty()) {
-                                return filtered;
-                            }
-                        }
-                    }
-                }
-            } else {
-                // 래치가 없으면 새로 생성 시도
-                latchInitialized = latch.trySetCount(1);
-                if (latchInitialized) {
-                    log.info("[Latch Created] {}({}) - Created new latch", itemType.getSimpleName(), identifier);
-                }
-            }
-
-            // 락 획득 시도 (지수 백오프 적용)
-            for (int attempt = 0; attempt < 3; attempt++) {
-                // 각 시도마다 짧은 지연 추가 (스레드 간 경쟁 감소)
-                try {
-                    Thread.sleep(100 * (1 << attempt));  // 100ms, 200ms, 400ms
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-
-                if (acquireLock(lockKey)) {
-                    try {
-                        // 락 획득 후 재확인
-                        ApiCache apiCache = getApiCache(apiStatusKey);
-                        if (isCachedDone(apiCache)) {
-                            List<T> cachedResult = getFromCache(cacheKey, itemType);
-                            if (cachedResult != null) {
-                                List<T> filtered = cachedResult.stream().filter(nameFilter).toList();
-                                if (!filtered.isEmpty()) {
-                                    log.info("[Cache Hit after Lock] {}({}) - Got result after acquiring lock",
-                                            itemType.getSimpleName(), identifier);
-                                    return filtered;
-                                }
-                            }
-                        }
-
-                        // 직접 데이터 조회
-                        log.info("[Direct Fetch] {}({}) - No cache, retrieving directly", itemType.getSimpleName(), identifier);
-                        setPending(apiStatusKey);
-                        List<T> result = retriever.get();
-                        setCache(cacheKey, result, itemType);
-                        setDone(apiStatusKey);
-
-                        return result.stream().filter(nameFilter).toList();
-                    } finally {
-                        lockRedisTemplate.delete(lockKey);
-                        if (latchInitialized) {
-                            latch.countDown();  // 래치가 있으면 카운트다운
-                        }
-                    }
-                }
-            }
-
-            // 모든 시도 실패, 최후의 수단으로 직접 조회 (로깅 강화)
-            log.warn("[Last Resort] {}({}) - All attempts to acquire lock failed, direct retrieval",
-                    itemType.getSimpleName(), identifier);
-            List<T> result = retriever.get();
-            return result.stream().filter(nameFilter).toList();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("대기 중 인터럽트 발생", e);
-        } finally {
-            // 자신이 초기화한 래치만 삭제 조건 유지
-            if (latchInitialized) {
-                try {
-                    redissonClient.getCountDownLatch(latchKey).delete();
-                } catch (Exception e) {
-                    log.warn("[Latch Cleanup Failed] {}({}) - Failed to delete latch: {}",
-                            itemType.getSimpleName(), identifier, e.getMessage());
-                }
-            }
-        }
+        return result.stream().filter(nameFilter).toList();
     }
+
+    private <T> List<T> getFilteredCacheResult(String cacheKey, Class<T> itemType, Predicate<T> nameFilter) {
+        List<T> cachedResult = getFromCache(cacheKey, itemType);
+        return cachedResult.stream().filter(nameFilter).toList();
+    }
+
     private <T> void setCache(String cacheKey, List<T> items, Class<T> itemType) {
 
         log.debug("[Cache Set] Starting to set cache for key: {}, type: {}, items count: {}",
@@ -391,27 +298,10 @@ public class ApiCacheService {
 
     private void setDone(String key) {
         try {
-            apiCacheRedisTemplate.opsForValue().set(
-                    key,
-                    ApiCache.done(),
-                    CACHE_TTL
-            );
-
-            // 래치 처리 개선
-            String latchKey = "latch:" + key.replace("apiStatus:", "");
-            RCountDownLatch latch = redissonClient.getCountDownLatch(latchKey);
-
-            // 래치가 존재하고 카운트가 있는 경우에만 카운트다운
-            if (latch.getCount() > 0) {
-                try {
-                    latch.countDown();
-                    log.debug("[Latch Countdown] {} - Successfully counted down latch", latchKey);
-                } catch (Exception e) {
-                    log.warn("[Latch Countdown Failed] {} - Failed to countdown: {}", latchKey, e.getMessage());
-                }
-            }
+            apiCacheRedisTemplate.opsForValue().set(key, ApiCache.done(), CACHE_TTL);
+            log.debug("[Set Done] {} - Status set to DONE", key);
         } catch (Exception e) {
-            log.error("[SetDone Failed] {} - Failed to set done status: {}", key, e.getMessage());
+            log.error("[Set Done Failed] {} - Failed to set done status: {}", key, e.getMessage());
         }
     }
 
@@ -480,21 +370,7 @@ public class ApiCacheService {
     private boolean acquireLock(String lockKey) {
         RLock lock = redissonClient.getLock(lockKey);
         try {
-            // 재시도 로직 추가
-            for (int attempt = 0; attempt < 3; attempt++) {
-                boolean acquired = lock.tryLock(100, 30, TimeUnit.SECONDS);
-                if (acquired) {
-                    log.debug("[Lock Acquired] {} - Lock acquired on attempt {}", lockKey, attempt + 1);
-                    return true;
-                }
-
-                // 짧은 대기 후 재시도
-                if (attempt < 2) {
-                    Thread.sleep(50 * (1 << attempt));  // 50ms, 100ms 백오프
-                }
-            }
-            log.debug("[Lock Failed] {} - Failed to acquire lock after 3 attempts", lockKey);
-            return false;
+            return lock.tryLock(50, 3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("[Lock Interrupted] {} - Interrupted while acquiring lock", lockKey);
