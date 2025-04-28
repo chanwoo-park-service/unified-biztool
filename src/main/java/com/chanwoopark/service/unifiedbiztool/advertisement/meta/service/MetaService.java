@@ -729,6 +729,8 @@ public class MetaService {
             linkData.put("call_to_action", Map.of(
                     "type", "LEARN_MORE"
             ));
+            linkData.put("message", adRequest.getDefaultText());
+            linkData.put("caption", adRequest.getDisplayUrl());
 
             objectStorySpec.put("link_data", linkData);
             objectStorySpec.put("page_id", adRequest.getPageId());
