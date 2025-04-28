@@ -93,7 +93,7 @@ public class SetsParameters {
         String formattedStartTime = zonedDateTime.format(formatter);
         SetsParameters parameters = SetsParameters.builder()
                 .name(excelRowDto.getSetName())
-                .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
+                .optimizationGoal(MetaOptimizationGoal.OFFSITE_CONVERSIONS)
                 .billingEvent(MetaBillingEvent.LINK_CLICKS)
                 .bidAmount(1500L)
                 .campaignId(excelRowDto.getFirstCampaignId())
