@@ -650,10 +650,13 @@ public class MetaService {
                                 "page_id", adRequest.getPageId(),
                                 "video_data", Map.of(
                                         "video_id", video.getVideoId(),
-                                        "image_url", imageUploadResult.getUrl()
-                                ),
-                                "link_data", Map.of(
-                                        "link", adRequest.getLandingUrl()
+                                        "image_url", imageUploadResult.getUrl(),
+                                        "call_to_action", Map.of(
+                                                "type", "LIKE_PAGE",
+                                                "value", Map.of(
+                                                        "link", adRequest.getLandingUrl()
+                                                )
+                                        )
                                 )
                         )));
                     } catch (JsonProcessingException e) {
