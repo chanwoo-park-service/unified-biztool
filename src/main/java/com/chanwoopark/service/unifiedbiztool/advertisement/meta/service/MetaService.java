@@ -633,7 +633,22 @@ public class MetaService {
             return httpClientHelper.postForm(url, form -> {
                 form
                         .with("name", adRequest.getAdMaterialName())
-                        .with("access_token", accessToken);
+                        .with("access_token", accessToken)
+                        .with("title", adRequest.getTitle())
+                        .with("body", adRequest.getDescription())
+                        .with("link_destination_display_url", adRequest.getDisplayUrl());
+
+
+                try {
+                    form
+                            .with("contextual_multi_ads",objectMapper.writeValueAsString(Map.of(
+                                    "enroll_status", "OPT_OUT"
+                                    )
+                            )
+                    );
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
 
                 if (uploadResult instanceof VideoUploadResult video) {
                     ImageUploadResult imageUploadResult = (ImageUploadResult) video.getThumbnailResult();
@@ -641,12 +656,16 @@ public class MetaService {
                         form.with("object_story_spec", objectMapper.writeValueAsString(Map.of(
                                 "page_id", adRequest.getPageId(),
                                 "video_data", Map.of(
+                                        "title", adRequest.getTitle(),
+                                        "message", adRequest.getDescription(),
+                                        "link_description", adRequest.getDefaultText(),
                                         "video_id", video.getVideoId(),
                                         "image_url", imageUploadResult.getUrl(),
                                         "call_to_action", Map.of(
-                                                "type", "LIKE_PAGE",
+                                                "type", "LEARN_MORE",
                                                 "value", Map.of(
-                                                        "link", adRequest.getLandingUrl()
+                                                        "link", adRequest.getLandingUrl(),
+                                                        "link_caption", adRequest.getDisplayUrl()
                                                 )
                                         )
                                 )
@@ -659,8 +678,11 @@ public class MetaService {
                         form.with("object_story_spec", objectMapper.writeValueAsString(Map.of(
                                 "page_id", adRequest.getPageId(),
                                 "link_data", Map.of(
+                                        "name", adRequest.getTitle(),
                                         "image_hash", image.getImageHash(),
-                                        "link", adRequest.getLandingUrl()
+                                        "link", adRequest.getLandingUrl(),
+                                        "message", adRequest.getDefaultText(),
+                                        "description", adRequest.getDescription()
                                 )
                         )));
                     } catch (JsonProcessingException e) {
@@ -677,7 +699,19 @@ public class MetaService {
                 + "/adcreatives";
         return httpClientHelper.postForm(url, form -> {
             form.with("name", adRequest.getAdMaterialName())
-                    .with("access_token", accessToken);
+                    .with("access_token", accessToken)
+                    .with("link_destination_display_url", adRequest.getDisplayUrl())
+                    .with("title", adRequest.getTitle());
+            try {
+                form
+                        .with("contextual_multi_ads",objectMapper.writeValueAsString(Map.of(
+                                                "enroll_status", "OPT_OUT"
+                                        )
+                                )
+                        );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             List<Map<String, Object>> childAttachments = new ArrayList<>();
             for (UploadResult result : uploadResults) {
                 Map<String, Object> attachment = getAttachment(adRequest, (ImageUploadResult) result);
@@ -705,13 +739,13 @@ public class MetaService {
     private static Map<String, Object> getAttachment(AdRequest adRequest, ImageUploadResult result) {
         Map<String, Object> attachment = new HashMap<>();
         attachment.put("description", adRequest.getDescription());
-
         if (result.getImageHash() != null) {
             attachment.put("image_hash", result.getImageHash());
         }
 
         attachment.put("link", adRequest.getLandingUrl());
-        attachment.put("name", adRequest.getDisplayUrl());
+        attachment.put("name", adRequest.getTitle());
+        attachment.put("caption", adRequest.getDisplayUrl());
         return attachment;
     }
 
