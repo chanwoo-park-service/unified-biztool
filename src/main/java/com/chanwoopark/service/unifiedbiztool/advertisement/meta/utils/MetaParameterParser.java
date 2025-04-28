@@ -30,9 +30,9 @@ public class MetaParameterParser {
     public static List<Integer> getLocales(String raw) {
         return switch (raw) {
             case "한국어":
-                yield List.of(3);
+                yield List.of(12);
             case "영어":
-                yield List.of(4);
+                yield List.of(6);
             default:
                 throw new IllegalStateException("Unexpected value: " + raw);
         };

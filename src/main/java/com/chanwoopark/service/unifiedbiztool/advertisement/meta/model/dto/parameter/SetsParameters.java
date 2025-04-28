@@ -93,8 +93,8 @@ public class SetsParameters {
         String formattedStartTime = zonedDateTime.format(formatter);
         SetsParameters parameters = SetsParameters.builder()
                 .name(excelRowDto.getSetName())
-                .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
-                .billingEvent(MetaBillingEvent.LINK_CLICKS)
+                .optimizationGoal(MetaOptimizationGoal.OFFSITE_CONVERSIONS)
+                .billingEvent(MetaBillingEvent.IMPRESSIONS)
                 .bidAmount(1500L)
                 .campaignId(excelRowDto.getFirstCampaignId())
                 .status(MetaAdStatus.PAUSED)
@@ -157,8 +157,8 @@ public class SetsParameters {
         String formattedStartTime = zonedDateTime.format(formatter);
         SetsParameters parameters = SetsParameters.builder()
                 .name(adRequest.getSetName())
-                .optimizationGoal(MetaOptimizationGoal.LINK_CLICKS)
-                .billingEvent(MetaBillingEvent.LINK_CLICKS)
+                .optimizationGoal(MetaOptimizationGoal.OFFSITE_CONVERSIONS)
+                .billingEvent(MetaBillingEvent.IMPRESSIONS)
                 .bidAmount(1500L)
                 .campaignId(adRequest.getCampaignId())
                 .status(MetaAdStatus.PAUSED)
