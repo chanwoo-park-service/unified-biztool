@@ -187,7 +187,6 @@
       // map 루프 안에서 각 행별로 모달 값 읽기
       const processedData = allRowData.map((row, rowIndex) => { // <<<--- rowIndex 사용
         const newRow = {...row};
-        console.log(`newRow : ${newRow}`)
 
         // 현재 행 인덱스(rowIndex)를 사용하여 해당 모달 행의 ID 생성 및 값 읽기
         const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
@@ -214,6 +213,7 @@
                   "campaignName": newRow.campaignName,
                   "campaignId": newRow.campaignId,
                   "budget": newRow.budget,
+                  "ageRange": newRow.ageRange,
                   "startDate": newRow.startDate,
                   "startTime": newRow.startTime,
                   "location": newRow.location,
@@ -484,6 +484,12 @@
             type: 'numericColumn'
           },
           {
+            headerName: "나이 범위(설정시 어드밴티지 + 타겟 활성화)",
+            field: "ageRange",
+            editable: true,
+            minWidth: 277, maxWidth: 300
+          },
+          {
             headerName: "시작날짜(선택)",
             field: "startDate",
             editable: true,
@@ -710,6 +716,7 @@
           this.campaignName = data.campaignName || null;
           this.campaignId = data.campaignId || null;
           this.budget = data.budget || null;
+          this.ageRange = data.ageRange || null;
           this.startDate = data.startDate || null;
           this.startTime = data.startTime || null;
           this.location = data.location || null;

@@ -14,6 +14,7 @@ public enum MetaExcelColumns {
     CAMPAIGN_TYPE("캠페인 형태"),
     CAMPAIGN_NAME("캠페인명"),
     BUDGET("예산"),
+    AGE_RANGE("나이 범위(설정시 어드밴티지 + 타겟 활성화)"),
     START_DATE("시작 날짜"),
     START_TIME("시작 시간"),
     LOCATION("위치"),

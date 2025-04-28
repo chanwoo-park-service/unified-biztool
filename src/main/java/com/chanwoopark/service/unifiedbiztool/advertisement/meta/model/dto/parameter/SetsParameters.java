@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Builder
@@ -100,15 +101,7 @@ public class SetsParameters {
                 .accessToken(accessToken)
                 .startTime(formattedStartTime)
                 .targeting(
-                        Targeting.builder()
-                                .geoLocations(
-                                        Targeting.GeoLocations.builder()
-                                                .countries(MetaParameterParser.getGeoLocation(excelRowDto.getLocation()))
-                                                .build()
-                                )
-                                .genders(MetaParameterParser.getGenders(excelRowDto.getGender()))
-                                .locales(MetaParameterParser.getLocales(excelRowDto.getLanguage()))
-                                .build()
+                        getTargeting(excelRowDto)
                 )
                         .build();
 
@@ -130,6 +123,34 @@ public class SetsParameters {
         return parameters;
     }
 
+    private static Targeting getTargeting(ExcelRowDto excelRowDto) {
+        return Targeting.builder()
+                .geoLocations(
+                        Targeting.GeoLocations.builder()
+                                .countries(MetaParameterParser.getGeoLocation(excelRowDto.getLocation()))
+                                .build()
+                )
+                .genders(MetaParameterParser.getGenders(excelRowDto.getGender()))
+                .locales(MetaParameterParser.getLocales(excelRowDto.getLanguage()))
+                .targetingAutomation(
+                        excelRowDto.getAgeRange() != null && excelRowDto.getAgeRange().length() == 5
+                                ? Targeting.TargetingAutomation
+                                .builder()
+                                .advantageAudience(1)
+                                .build()
+                                : Targeting.TargetingAutomation
+                                .builder()
+                                .advantageAudience(0)
+                                .build()
+                )
+                .ageRange(
+                        excelRowDto.getAgeRange() != null && excelRowDto.getAgeRange().length() == 5
+                                ? List.of(Integer.valueOf(excelRowDto.getAgeRange().split("~")[0]), Integer.valueOf(excelRowDto.getAgeRange().split("~")[1]))
+                                : null
+                )
+                .build();
+    }
+
     public static SetsParameters fromAdRequest(AdRequest adRequest, String accessToken) {
         ZonedDateTime zonedDateTime = ZonedDateTime.of(adRequest.getStartDate(), adRequest.getStartTime(), ZoneId.of("Asia/Seoul"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -144,15 +165,7 @@ public class SetsParameters {
                 .accessToken(accessToken)
                 .startTime(formattedStartTime)
                 .targeting(
-                        Targeting.builder()
-                                .geoLocations(
-                                        Targeting.GeoLocations.builder()
-                                                .countries(MetaParameterParser.getGeoLocation(adRequest.getLocation()))
-                                                .build()
-                                )
-                                .genders(MetaParameterParser.getGenders(adRequest.getGender()))
-                                .locales(MetaParameterParser.getLocales(adRequest.getLanguage()))
-                                .build()
+                        getTargeting(adRequest)
                 )
                 .build();
         setAge(adRequest.getMinAge(), adRequest.getMaxAge(), parameters);
@@ -169,6 +182,34 @@ public class SetsParameters {
         );
 
         return parameters;
+    }
+
+    private static Targeting getTargeting(AdRequest adRequest) {
+        return Targeting.builder()
+                .geoLocations(
+                        Targeting.GeoLocations.builder()
+                                .countries(MetaParameterParser.getGeoLocation(adRequest.getLocation()))
+                                .build()
+                )
+                .genders(MetaParameterParser.getGenders(adRequest.getGender()))
+                .locales(MetaParameterParser.getLocales(adRequest.getLanguage()))
+                .targetingAutomation(
+                        adRequest.getAgeRange() != null && adRequest.getAgeRange().length() == 5
+                                ? Targeting.TargetingAutomation
+                                .builder()
+                                .advantageAudience(1)
+                                .build()
+                                : Targeting.TargetingAutomation
+                                .builder()
+                                .advantageAudience(0)
+                                .build()
+                )
+                .ageRange(
+                        adRequest.getAgeRange() != null && adRequest.getAgeRange().length() == 5
+                                ? List.of(Integer.valueOf(adRequest.getAgeRange().split("~")[0]), Integer.valueOf(adRequest.getAgeRange().split("~")[1]))
+                                : null
+                )
+                .build();
     }
 
     private static void setAge(Integer minAge, String maxAge, SetsParameters parameters) {
