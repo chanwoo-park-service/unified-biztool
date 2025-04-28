@@ -1,9 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.advertisement.meta.service;
 
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.ImageUploadResult;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.UploadResult;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.VideoChunkResponse;
-import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.VideoUploadResult;
+import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.dto.api.*;
 import com.chanwoopark.service.unifiedbiztool.advertisement.meta.model.enums.MetaVideoUploadPhase;
 import com.chanwoopark.service.unifiedbiztool.common.http.HttpClientHelper;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +34,13 @@ public class MetaUploadService {
 
     private final ObjectMapper objectMapper;
 
+    private final ThumbnailService thumbnailService;
+
     @Async
     public CompletableFuture<UploadResult> uploadVideo(
             String accountId,
             MultipartFile file,
-            String accessToken,
-            MultipartFile thumbnail
+            String accessToken
     ) {
         long fileSize = file.getSize();
         String originalFilename = file.getOriginalFilename();
@@ -126,13 +124,14 @@ public class MetaUploadService {
             } catch (Exception e) {
                 log.warn("[Meta Finish Upload] 응답 파싱 실패: {}", finishResponse);
             }
+            ThumbnailRequest thumbnailRequest = thumbnailService.extractThumbnail(file);
 
             return CompletableFuture.completedFuture(
                     VideoUploadResult.builder()
                             .success(isFinishSuccess)
                             .videoId(videoId)
                             .originalFilename(originalFilename != null ? originalFilename : "")
-                            .thumbnailResult(uploadImage(accountId, thumbnail, accessToken).join())
+                            .thumbnailResult(uploadThumbnail(accountId, thumbnailRequest, accessToken).join())
                             .reason(isFinishSuccess ?
                                     null :
                                     messageSource.getMessage(
@@ -267,6 +266,23 @@ public class MetaUploadService {
                 return "chunk_" + finalStart + "_" + finalEnd + "_" + uniqueId + finalExtension;
             }
         };
+    }
+
+    private CompletableFuture<UploadResult> uploadThumbnail(String adAccountId, ThumbnailRequest thumbnailRequest, String accessToken) {
+        return uploadImage(
+                adAccountId,
+                thumbnailRequest.getMultipartFile(),
+                accessToken
+        ).whenComplete((result, ex) -> {
+            if (ex == null && result.isSuccess()) {
+                boolean deleted = thumbnailRequest.getAbsoluteFile().delete();
+                if (!deleted) {
+                    log.warn("Thumbnail file deletion failed: {}", thumbnailRequest.getAbsoluteFile().getAbsolutePath());
+                }
+            } else {
+                log.error("Thumbnail upload failed or was interrupted: {}", ex != null ? ex.getMessage() : "Unknown error");
+            }
+        });
     }
 
     @Async
