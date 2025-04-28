@@ -84,6 +84,29 @@
       </div>
     </div>
 
+
+    <!-- ========== 오류 메시지 표시용 모달 추가 ========== -->
+    <div class="modal fade" id="errorDetailModal" tabindex="-1" aria-labelledby="errorDetailModalLabel" aria-hidden="true">
+      <!-- modal-dialog-scrollable 및 modal-lg 클래스 추가 -->
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="errorDetailModalLabel">오류 상세 내용</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="errorDetailModalBody">
+            <!-- 오류 메시지가 여기에 표시됩니다 -->
+            <pre style="white-space: pre-wrap; word-wrap: break-word;"><code><!-- 스타일 추가: 자동 줄바꿈 -->
+            </code></pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ========== 오류 메시지 모달 끝 ========== -->
+
   </div> <!-- layout:fragment="content" 끝 -->
 
 
@@ -106,10 +129,6 @@
     let minRowHeight = 150;
     let currentRowHeight;
     let gridApi;
-    let campaignList = [];
-    let pixelList = [];
-    let adAccountList = [];
-    let setList = [];
     let selectData = document.getElementById('selectData');
     function openModeal(){
       selectData.innerHTML = ''; // modal 초기화
@@ -175,118 +194,162 @@
 
 
 
-    function metaSubmit() {
+    // metaSubmit 함수를 async 함수로 변경
+    async function metaSubmit() {
       const allRowData = gridApi.getGridOption("rowData");
       if (!allRowData || allRowData.length === 0) {
         alert("전송할 데이터가 없습니다.");
         return;
       }
 
-      const requestBodyList = [];
-      let index = 1;
-      // map 루프 안에서 각 행별로 모달 값 읽기
-      const processedData = allRowData.map((row, rowIndex) => { // <<<--- rowIndex 사용
-        const newRow = {...row};
+      // --- 전체 처리 시작 전 UI 업데이트 (예: 버튼 비활성화) ---
+      const submitButton = document.querySelector('button[onclick="metaSubmit()"]');
+      if (submitButton) submitButton.disabled = true;
+      console.log("순차적 광고 등록 시작...");
+      // 필요하다면 전체 진행률 표시기 표시
 
-        // 현재 행 인덱스(rowIndex)를 사용하여 해당 모달 행의 ID 생성 및 값 읽기
-        const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
-        const selectedCampaignIdForRow = document.getElementById(`campaignList_${rowIndex}`)?.value;
-        const selectedPixelIdForRow = document.getElementById(`pixelList_${rowIndex}`)?.value;
-        const selectedSetIdForRow = document.getElementById(`setList_${rowIndex}`)?.value;
+      let successCount = 0;
+      let errorCount = 0;
 
-        // (디버깅용) 행별 선택 값 확인
-        console.log(`Row ${rowIndex} - Selected Ad Account: ${selectedAdAccountIdForRow}, Campaign: ${selectedCampaignIdForRow}, Pixel: ${selectedPixelIdForRow}, Set: ${selectedSetIdForRow}`);
 
-        // 읽어온 행별 선택값을 해당 그리드 행에 적용
-        newRow.adAccountId = selectedAdAccountIdForRow || newRow.adAccountId;
-        newRow.campaignId = selectedCampaignIdForRow || newRow.campaignId;
-        newRow.pixelId = selectedPixelIdForRow || newRow.pixelId;
-        newRow.setId = selectedSetIdForRow || newRow.setId;
+      for (const [rowIndex, rowData] of allRowData.entries()) {
+        console.log(`Row ${rowIndex + 1} 처리 시작...`);
 
-        let requestBody = new AdRequestDto(
-                {
-                  "index": index,
-                  "adAccountId": newRow.adAccountId,
-                  "adAccountName": newRow.adAccountName,
-                  "metaCampaignObjective": newRow.metaCampaignObjective,
-                  "metaCampaignType": newRow.metaCampaignType,
-                  "campaignName": newRow.campaignName,
-                  "campaignId": newRow.campaignId,
-                  "budget": newRow.budget,
-                  "ageRange": newRow.ageRange,
-                  "startDate": newRow.startDate,
-                  "startTime": newRow.startTime,
-                  "location": newRow.location,
-                  "language": newRow.language,
-                  "gender": newRow.gender,
-                  "minAge": newRow.minAge,
-                  "maxAge": newRow.maxAge,
-                  "setName": newRow.setName,
-                  "setId": newRow.setId,
-                  "adMaterialName": newRow.adMaterialName,
-                  "pageId": newRow.uploadPage,
-                  "metaCreativeFormat": newRow.metaCreativeFormat,
-                  "landingUrl": newRow.landingUrl,
-                  "displayUrl": newRow.displayUrl,
-                  "defaultText": newRow.defaultText,
-                  "title": newRow.title,
-                  "description": newRow.description,
-                  "otherRequests": newRow.otherRequests,
-                  "blank": newRow.blank,
-                  "adCode": newRow.adCode,
-                  "isShortUrlCreate": newRow.isShortUrlCreate,
-                  "shortUrl": newRow.shortUrl,
-                  "pixelId": newRow.pixelId,
-                  "pageResolved": newRow.pageResolved,
-                  "adAccountResolved": newRow.adAccountResolved,
-                  "campaignResolved": newRow.campaignResolved,
-                  "setResolved": newRow.setResolved,
-                  "pixelResolved": newRow.pixelResolved,
-                  "uploadPageName": newRow.uploadPage
-                }
-        )
-        index++;
-        requestBodyList.push(requestBody)
-        return newRow;
-      });
-      const rows = document.querySelectorAll('div[role="row"]');
-      for (let i = 0; i < requestBodyList.length; i++) {
-        let requestJson = JSON.stringify(requestBodyList[i]);
+        try { // 각 행 처리 시 발생할 수 있는 오류를 잡기 위해 try...catch 사용
+          // --- 현재 행 데이터 준비 ---
+          const newRow = { ...rowData }; // 원본 데이터 복사
 
-        console.log("Processed data for sending:", requestJson);
+          // 모달에서 선택된 값 가져오기
+          const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
+          const selectedCampaignIdForRow = document.getElementById(`campaignList_${rowIndex}`)?.value;
+          const selectedPixelIdForRow = document.getElementById(`pixelList_${rowIndex}`)?.value;
+          const selectedSetIdForRow = document.getElementById(`setList_${rowIndex}`)?.value;
 
-        const formData = new FormData();
+          // 선택값 적용
+          newRow.adAccountId = selectedAdAccountIdForRow || newRow.adAccountId;
+          newRow.campaignId = selectedCampaignIdForRow || newRow.campaignId;
+          newRow.pixelId = selectedPixelIdForRow || newRow.pixelId;
+          newRow.setId = selectedSetIdForRow || newRow.setId;
 
-        // 파일 추가 로직
-        const currentRow = rows[i + 1]; // 현재 처리 중인 행
-        if (currentRow) {
-          const fileInput = currentRow.querySelector('input[type="file"][name="files"]');
+          // AdRequestDto 생성
+          const requestBody = new AdRequestDto({
+            index: rowIndex + 1, // 1부터 시작하는 인덱스
+            // DTO 생성자에 필요한 모든 필드를 newRow에서 가져와 전달
+            adAccountId: newRow.adAccountId,
+            adAccountName: newRow.adAccountName,
+            metaCampaignObjective: newRow.metaCampaignObjective,
+            metaCampaignType: newRow.metaCampaignType,
+            campaignName: newRow.campaignName,
+            campaignId: newRow.campaignId,
+            budget: newRow.budget,
+            ageRange: newRow.ageRange,
+            startDate: newRow.startDate,
+            startTime: newRow.startTime,
+            location: newRow.location,
+            language: newRow.language,
+            gender: newRow.gender,
+            minAge: newRow.minAge,
+            maxAge: newRow.maxAge,
+            setName: newRow.setName,
+            setId: newRow.setId,
+            adMaterialName: newRow.adMaterialName,
+            pageId: newRow.uploadPage, // pageId 필드가 uploadPage 값을 사용하는지 확인 필요
+            metaCreativeFormat: newRow.metaCreativeFormat,
+            landingUrl: newRow.landingUrl,
+            displayUrl: newRow.displayUrl,
+            defaultText: newRow.defaultText,
+            title: newRow.title,
+            description: newRow.description,
+            otherRequests: newRow.otherRequests,
+            blank: newRow.blank,
+            adCode: newRow.adCode,
+            isShortUrlCreate: newRow.isShortUrlCreate,
+            shortUrl: newRow.shortUrl,
+            pixelId: newRow.pixelId,
+            uploadPageName: newRow.uploadPage, // uploadPageName 필드 추가 (DTO에 있다면)
+            // Resolved 필드는 DTO 기본값(false) 사용
+          });
+
+          const requestJson = JSON.stringify(requestBody);
+          const formData = new FormData();
+
+          // --- 현재 행의 파일 추가 ---
+          // 주의: DOM에서 특정 행의 파일 입력을 안정적으로 찾는 방법 필요
+          // getRowNode 사용 시도 (rowNode가 null일 수 있음에 유의)
+          const rowNode = gridApi.getRowNode(rowIndex);
+          let fileInput = null;
+          if (rowNode?.eGui) { // 행의 DOM 요소가 렌더링된 경우
+            fileInput = rowNode.eGui.querySelector('input[type="file"][name="files"]');
+          } else {
+            // Fallback: DOM 요소가 없을 경우 (예: 가상 스크롤)
+            // 이 방식은 DOM 순서와 데이터 순서가 일치한다고 가정하므로 덜 안정적일 수 있음
+            console.warn(`Row node for index ${rowIndex} not found directly. Using querySelectorAll as fallback.`);
+            const allFileInputs = document.querySelectorAll('#myGrid input[type="file"][name="files"]');
+            if (allFileInputs.length > rowIndex) {
+              fileInput = allFileInputs[rowIndex];
+            }
+          }
+
           let filesAttached = false;
-
           if (fileInput && fileInput.files && fileInput.files.length > 0) {
             for (let j = 0; j < fileInput.files.length; j++) {
               formData.append('files', fileInput.files[j]);
               filesAttached = true;
             }
+            console.log(`Row ${rowIndex + 1}: ${fileInput.files.length} files attached.`);
+          } else {
+            console.log(`Row ${rowIndex + 1}: No files attached.`);
           }
 
-          const blob = new Blob([requestJson], {type: 'application/json'});
+          // JSON 데이터를 Blob으로 추가
+          const blob = new Blob([requestJson], { type: 'application/json' });
           formData.append('request', blob, 'request.json');
+          await fetchCall(formData);
+          successCount++;
+          rowNode?.setDataValue('errorMessage', 'SUCCESS');//버튼 success
+        } catch (error) {
+          errorCount++;
+          const rowNode = gridApi.getRowNode(rowIndex); // 다시 노드 찾기
+          if (rowNode) {
+            // 서버 응답 오류 메시지를 파싱하여 넣거나, 일반 오류 메시지 사용
+            let errMsg = error.message || "알 수 없는 오류";
+            rowNode.setDataValue('errorMessage', errMsg);
+            try {
+              // 예시: error.message가 "HTTP error! status: 400, message: {"error":...}" 형태일 경우
+              const jsonStartIndex = errMsg.indexOf('{');
+              if (jsonStartIndex !== -1) {
+                const jsonString = errMsg.substring(jsonStartIndex);
+                const errorData = JSON.parse(jsonString);
+                const userTitle = errorData?.error?.error_user_title;
+                const userMsg = errorData?.error?.error_user_msg;
+                if (userTitle && userMsg) {
+                  errMsg = `제목: ${userTitle}\n\n내용: ${userMsg}`;
+                } else if (errorData?.error) {
+                  errMsg = JSON.stringify(errorData.error, null, 2);
+                }
+              }
+            } catch (parseError) { /* 파싱 실패 시 기존 errMsg 사용 */ }
 
-          if (filesAttached || true) { // 파일이 첨부되었을 때만 전송하거나 항상 전송
-            fetchCall(formData);
+            rowNode.setDataValue('errorMessage', errMsg);
           }
-
-          // 모달 닫기
-          const modalElement = document.getElementById('exampleModal');
-          const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
-          if (bootstrapModal) {
-            bootstrapModal.hide();
-          }
+          // 루프를 계속 진행 (오류 발생해도 다음 행 처리)
+          // 만약 오류 발생 시 중단하려면 여기서 throw error; 또는 return;
         }
+      } // for 루프 끝
+
+      // --- 전체 처리 완료 후 UI 업데이트 ---
+      if (submitButton) submitButton.disabled = false;
+      console.log(`순차적 광고 등록 완료. 성공: ${successCount}, 실패: ${errorCount}`);
+      alert(`전체 광고 등록 시도 완료.\n성공: ${successCount}건\n실패: ${errorCount}건`);
+      // 필요하다면 전체 진행률 표시기 숨김
+
+      // 모든 처리가 끝난 후 모달 닫기
+      const modalElement = document.getElementById('exampleModal');
+      const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
+      if (bootstrapModal) {
+        bootstrapModal.hide();
       }
     }
-
       function fetchCall(formData) {
         const headerValues = {
           'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
@@ -335,6 +398,102 @@
                 });
       }
 
+
+    // --- 상태 버튼 렌더러 컴포넌트 ---
+    // --- 상태 버튼 렌더러 컴포넌트 ---
+    class StatusButtonRenderer {
+      // ... (eGui, eButton, errorMessage 등 선언 동일) ...
+      errorModalInstance = null;
+
+      init(params) {
+        this.eGui = document.createElement('div');
+        this.eButton = document.createElement('button');
+        this.eButton.type = 'button';
+        this.eButton.classList.add('btn', 'btn-sm');
+        this.errorMessage = params.value; // 현재 행의 errorMessage 값
+
+        // 모달 인스턴스 가져오기 (동일)
+        const errorModalElement = document.getElementById('errorDetailModal');
+        if (errorModalElement) {
+          this.errorModalInstance = bootstrap.Modal.getOrCreateInstance(errorModalElement);
+        } else {
+          console.error("Error modal element (#errorDetailModal) not found!");
+        }
+        // --- 상태 분기 로직 수정 ---
+        if (this.errorMessage === 'SUCCESS') {
+          // 1. 전송 완료 상태
+          this.eButton.classList.add('btn-success'); // 녹색 버튼
+          this.eButton.textContent = '전송완료';
+          this.eButton.disabled = true;
+        } else if (this.errorMessage != null && this.errorMessage !== '') {
+          // 2. 오류 발생 상태 (null, 빈 문자열, '__SUCCESS__'가 아님)
+          this.eButton.classList.add('btn-warning'); // 주황색 버튼 (또는 btn-danger)
+          this.eButton.textContent = '오류 보기';
+          this.eButton.disabled = false; // 활성화 (클릭 가능)
+
+          // 오류 보기 모달 리스너 (기존 로직과 동일)
+          this.eventListener = () => {
+            if (this.errorModalInstance && this.errorMessage) {
+              const modalBody = document.getElementById('errorDetailModalBody');
+              const codeElement = modalBody?.querySelector('pre > code');
+              if (codeElement) {
+                let displayMessage = this.errorMessage;
+                try {
+                  const errorData = JSON.parse(this.errorMessage);
+                  const errorObject = errorData?.error;
+                  const userTitle = errorObject?.error_user_title;
+                  const userMsg = errorObject?.error_user_msg;
+                  if (userTitle && userMsg) {
+                    displayMessage = `제목: ${userTitle}\n\n내용: ${userMsg}`;
+                  } else if (errorObject) {
+                    displayMessage = JSON.stringify(errorObject, null, 2);
+                  }
+                } catch (e) {
+                  console.warn("Could not parse errorMessage as JSON, displaying original message:", e);
+                }
+                codeElement.textContent = displayMessage;
+              } else {
+                console.error("Modal body's code element not found!");
+                if(modalBody) modalBody.textContent = this.errorMessage;
+              }
+              this.errorModalInstance.show();
+            } else if (!this.errorModalInstance) {
+              console.error("Cannot show error modal because the instance is not available.");
+              alert(`오류 내용:\n${this.errorMessage}`);
+            }
+          };
+          this.eButton.addEventListener('click', this.eventListener);
+
+        } else {
+          this.eButton.classList.add('btn-primary'); // 파란색 버튼
+          this.eButton.textContent = '정상';
+          this.eButton.disabled = true; // 비활성화
+        }
+
+
+        this.eGui.appendChild(this.eButton);
+      }
+
+      getGui() {
+        return this.eGui;
+      }
+
+      refresh(params) {
+        // refresh 시에도 errorMessage 업데이트 및 버튼 상태 재설정 필요 시 로직 추가
+        this.errorMessage = params.value;
+        // 간단하게는 false 반환하여 재생성 유도
+        return false;
+      }
+
+      destroy() {
+        if (this.eButton && this.eventListener) {
+          this.eButton.removeEventListener('click', this.eventListener);
+        }
+        // 모달 인스턴스 자체를 destroy 할 필요는 없음 (공용 모달이므로)
+      }
+    }
+
+
       class CustomButtonComponent {
         eGui;
         eButton;
@@ -372,6 +531,12 @@
         rowData: [],
 
         columnDefs: [
+          {
+            headerName: "상태",
+            field: "errorMessage",
+            cellRenderer: StatusButtonRenderer,
+            minWidth: 120, maxWidth: 300
+          },
           {
             headerName: "파일 업로드",
             field: "button",
@@ -604,12 +769,7 @@
             editable: true,
             minWidth: 100, maxWidth: 300
           },
-          {
-            headerName: "에러메세지",
-            field: "errorMessage",
-            editable: true,
-            minWidth: 100, maxWidth: 300
-          },
+
         ],
 
         rowClassRules: {
