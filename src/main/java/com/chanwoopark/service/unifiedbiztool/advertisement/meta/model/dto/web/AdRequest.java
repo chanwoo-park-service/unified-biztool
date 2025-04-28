@@ -42,6 +42,8 @@ public class AdRequest {
     @NotNull(message = "{adRequest.budget.notnull}")
     private Long budget;
 
+    private String ageRange;
+
     @NotNull(message = "{adRequest.startDate.notnull}")
     private LocalDate startDate;
 
@@ -60,7 +62,6 @@ public class AdRequest {
     @NotNull(message = "{adRequest.minAge.notnull}")
     private Integer minAge;
 
-    @NotNull(message = "{adRequest.maxAge.notnull}")
     private String maxAge;
 
     @NotNull(message = "{adRequest.setName.notnull}")

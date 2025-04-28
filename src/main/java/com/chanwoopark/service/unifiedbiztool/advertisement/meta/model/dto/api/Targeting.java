@@ -10,6 +10,10 @@ import java.util.List;
 @Builder
 @Getter
 public class Targeting {
+    @Setter
+    @JsonProperty("age_range")
+    private List<Integer> ageRange;
+
     @JsonProperty("geo_locations")
     private GeoLocations geoLocations;
 
@@ -44,6 +48,7 @@ public class Targeting {
     @Getter
     @Builder
     public static class GeoLocations {
+        @JsonProperty("countries")
         private List<String> countries;
     }
 }

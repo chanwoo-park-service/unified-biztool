@@ -27,6 +27,8 @@ public class ExcelRowDto {
 
     private Long budget;
 
+    private String ageRange;
+
     private LocalDate startDate;
 
     private LocalTime startTime;
@@ -88,27 +90,28 @@ public class ExcelRowDto {
                 .metaCampaignType(MetaCampaignType.valueOf(getString(row.getCell(2))))
                 .campaignName(getString(row.getCell(3)))
                 .budget(getLong(row.getCell(4)))
-                .startDate(parseDate(row.getCell(5)))
-                .startTime(parseTime(row.getCell(6)))
-                .location(getString(row.getCell(7)))
-                .language(getString(row.getCell(8)))
-                .gender(getString(row.getCell(9)))
-                .minAge(getInteger(row.getCell(10)))
-                .maxAge(getString(row.getCell(11)))
-                .setName(getString(row.getCell(12)))
-                .adMaterialName(getString(row.getCell(13)))
-                .uploadPage(getString(row.getCell(14)).replaceAll("\\.0", ""))
-                .metaCreativeFormat(parseCreativeFormat(row.getCell(15)))
-                .landingUrl(getString(row.getCell(16)))
-                .displayUrl(getString(row.getCell(17)))
-                .defaultText(getString(row.getCell(18)))
-                .title(getString(row.getCell(19)))
-                .description(getString(row.getCell(20)))
-                .otherRequests(getString(row.getCell(21)))
-                .blank(getString(row.getCell(22)))
-                .adCode(getString(row.getCell(23)))
-                .isShortUrlCreate(getString(row.getCell(24)))
-                .shortUrl(getString(row.getCell(25)))
+                .ageRange(getString(row.getCell(5)))
+                .startDate(parseDate(row.getCell(6)))
+                .startTime(parseTime(row.getCell(7)))
+                .location(getString(row.getCell(8)))
+                .language(getString(row.getCell(9)))
+                .gender(getString(row.getCell(10)))
+                .minAge(getInteger(row.getCell(11)))
+                .maxAge(getString(row.getCell(12)))
+                .setName(getString(row.getCell(13)))
+                .adMaterialName(getString(row.getCell(14)))
+                .uploadPage(getString(row.getCell(15)).replaceAll("\\.0", ""))
+                .metaCreativeFormat(parseCreativeFormat(row.getCell(16)))
+                .landingUrl(getString(row.getCell(17)))
+                .displayUrl(getString(row.getCell(18)))
+                .defaultText(getString(row.getCell(19)))
+                .title(getString(row.getCell(20)))
+                .description(getString(row.getCell(21)))
+                .otherRequests(getString(row.getCell(22)))
+                .blank(getString(row.getCell(23)))
+                .adCode(getString(row.getCell(24)))
+                .isShortUrlCreate(getString(row.getCell(25)))
+                .shortUrl(getString(row.getCell(26)))
                 .build();
     }
 

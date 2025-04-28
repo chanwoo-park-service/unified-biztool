@@ -23,6 +23,7 @@ public class ExcelResponse {
     private String campaignName;
     private List<Campaign> campaignList;
     private Long budget;
+    private String ageRange;
     private LocalDate startDate;
     private LocalTime startTime;
     private String location;
@@ -65,6 +66,7 @@ public class ExcelResponse {
                 .campaignName(dto.getCampaignName())
                 .campaignList(dto.getCampaignList())
                 .budget(dto.getBudget())
+                .ageRange(dto.getAgeRange())
                 .startDate(dto.getStartDate())
                 .startTime(dto.getStartTime())
                 .location(dto.getLocation())
