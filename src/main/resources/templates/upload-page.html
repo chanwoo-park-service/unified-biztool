@@ -182,9 +182,12 @@
         return;
       }
 
+      const requestBodyList = [];
+      let index = 1;
       // map 루프 안에서 각 행별로 모달 값 읽기
       const processedData = allRowData.map((row, rowIndex) => { // <<<--- rowIndex 사용
-        const newRow = { ...row };
+        const newRow = {...row};
+        console.log(`newRow : ${newRow}`)
 
         // 현재 행 인덱스(rowIndex)를 사용하여 해당 모달 행의 ID 생성 및 값 읽기
         const selectedAdAccountIdForRow = document.getElementById(`adAccountList_${rowIndex}`)?.value;
@@ -201,486 +204,537 @@
         newRow.pixelId = selectedPixelIdForRow || newRow.pixelId;
         newRow.setId = selectedSetIdForRow || newRow.setId;
 
-        // 서버 전송에 불필요한 리스트 데이터 제거
-        delete newRow.adAccountList;
-        delete newRow.campaignList;
-        delete newRow.pixelList;
-        delete newRow.setList;
-
+        let requestBody = new AdRequestDto(
+                {
+                  "index": index,
+                  "adAccountId": newRow.adAccountId,
+                  "adAccountName": newRow.adAccountName,
+                  "metaCampaignObjective": newRow.metaCampaignObjective,
+                  "metaCampaignType": newRow.metaCampaignType,
+                  "campaignName": newRow.campaignName,
+                  "campaignId": newRow.campaignId,
+                  "budget": newRow.budget,
+                  "startDate": newRow.startDate,
+                  "startTime": newRow.startTime,
+                  "location": newRow.location,
+                  "language": newRow.language,
+                  "gender": newRow.gender,
+                  "minAge": newRow.minAge,
+                  "maxAge": newRow.maxAge,
+                  "setName": newRow.setName,
+                  "setId": newRow.setId,
+                  "adMaterialName": newRow.adMaterialName,
+                  "pageId": newRow.uploadPage,
+                  "metaCreativeFormat": newRow.metaCreativeFormat,
+                  "landingUrl": newRow.landingUrl,
+                  "displayUrl": newRow.displayUrl,
+                  "defaultText": newRow.defaultText,
+                  "title": newRow.title,
+                  "description": newRow.description,
+                  "otherRequests": newRow.otherRequests,
+                  "blank": newRow.blank,
+                  "adCode": newRow.adCode,
+                  "isShortUrlCreate": newRow.isShortUrlCreate,
+                  "shortUrl": newRow.shortUrl,
+                  "pixelId": newRow.pixelId,
+                  "pageResolved": newRow.pageResolved,
+                  "adAccountResolved": newRow.adAccountResolved,
+                  "campaignResolved": newRow.campaignResolved,
+                  "setResolved": newRow.setResolved,
+                  "pixelResolved": newRow.pixelResolved,
+                  "uploadPageName": newRow.uploadPage
+                }
+        )
+        index++;
+        requestBodyList.push(requestBody)
         return newRow;
       });
+      const rows = document.querySelectorAll('div[role="row"]');
+      for (let i = 0; i < requestBodyList.length; i++) {
+        let requestJson = JSON.stringify(requestBodyList[i]);
 
-      const requestJson = JSON.stringify(processedData);
-      console.log("Processed data for sending:", requestJson);
-
-      const formData = new FormData();
-
-      // 파일 추가 로직
-      let filesAttached = false;
-      const fileInputs = document.querySelectorAll('#myGrid input[type="file"][name="files"]');
-      fileInputs.forEach((input) => {
-        if (input.files && input.files.length > 0) {
-          for (let i = 0; i < input.files.length; i++) {
-            formData.append('files', input.files[i]);
-            filesAttached = true;
-          }
-        }
-      });
-
-      formData.append('request', requestJson);
-
-      // 서버 전송
-      fetchCall(formData);
-
-      // 모달 닫기
-      const modalElement = document.getElementById('exampleModal');
-      const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
-      if (bootstrapModal) {
-        bootstrapModal.hide();
-      }
-    }
-
-
-
-    function fetchCall(formData) {
-      fetch('/api/meta/publish', { // 서버 업로드 엔드포인트
-        headers: {'Content-Type': 'multipart/form-data',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')}, // CSRF 토큰 헤더 포함
-        method: 'POST',
-        body: formData, // FormData 객체 전송 (Content-Type은 브라우저가 자동으로 설정)
-      })
-              .then(response => {
-                if (!response.ok) {
-
-                  return response.text().then(text => {
-                    let errorMessage = `HTTP error! status: ${response.status}`;
-                    try {
-                      // 서버가 JSON 형태의 에러 메시지를 보냈을 경우 파싱 시도
-                      const errorData = JSON.parse(text);
-                      errorMessage += `, message: ${errorData.message || errorData.error || text}`;
-                    } catch (e) {
-                      // JSON 파싱 실패 시 그냥 텍스트 사용
-                      errorMessage += `, message: ${text}`;
-                    }
-                    throw new Error(errorMessage);
-                  });
-                }
-
-                return response.json();
-              })
-              .then(data => {
-                console.log('Upload success:', data);
-                // 성공 시 처리 로직 (예: 그리드 업데이트, 알림 표시 등)
-                alert('데이터 및 파일 전송 성공!');
-                // 필요하다면 성공 후 그리드 초기화 또는 상태 업데이트
-                // gridApi.setGridOption('rowData', []); // 예시: 성공 후 그리드 비우기
-              })
-              .catch(error => {
-                console.error('Upload error:', error);
-                // 에러 시 처리 로직 (예: 사용자에게 에러 알림)
-                alert(`데이터 및 파일 전송 중 오류 발생: ${error.message}`);
-              });
-    }
-
-    class CustomButtonComponent {
-      eGui;
-      eButton;
-      eventListener;
-
-      init() {
-        this.eGui = document.createElement("div");
-        const eButton = document.createElement("input");
-        eButton.setAttribute("type", "file");
-        eButton.setAttribute("name", "files");
-        eButton.setAttribute("class", "form-control");
-        eButton.setAttribute("multiple", "multiple");
-        eButton.setAttribute("accept", ".jpg, .jpeg, .png, .mp4, .gif");
-        eButton.textContent = "파일 업로드";
-        this.eGui.appendChild(eButton);
-      }
-
-      getGui() {
-        return this.eGui;
-      }
-
-      refresh() {
-        return true;
-      }
-
-      destroy() {
-        if (this.eButton) {
-          this.eButton.removeEventListener("click", this.eventListener);
-        }
-      }
-    }
-
-    const gridOptions = {
-
-      rowData: [],
-
-      columnDefs: [
-        {
-          headerName: "파일 업로드",
-          field: "button",
-          cellRenderer: CustomButtonComponent,
-          minWidth: 280
-        },
-        {
-          headerName: "캠페인 목표(선택)",
-          field: "metaCampaignObjective",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          cellEditorParams: {
-            values: [
-              "판매",
-              "트래픽"
-            ],
-          },
-          minWidth: 150, maxWidth: 300,
-          valueFormatter: params => {
-            const value = params.value;
-            if (value === 'OUTCOME_SALES') {
-              return '판매';
-            } else if (value === 'OUTCOME_TRAFFIC') {
-              return '트래픽';
-            } else {
-              return value;
-            }
-          },
-          valueSetter: params => {
-            const selectedText = params.newValue;
-            const field = params.colDef.field;
-            const data = params.data;
-
-            if (selectedText === '판매') {
-              data[field] = 'OUTCOME_SALES';
-            } else if (selectedText === '트래픽') {
-              data[field] = 'OUTCOME_TRAFFIC';
-            } else {
-              // 예외 처리: 예상치 못한 값이 선택된 경우
-              data[field] = selectedText;
-            }
-            return true;
-          }
-        },
-        {
-          headerName: "캠페인 형태(선택)",
-          field: "metaCampaignType",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          cellEditorParams: {
-            values: [
-              "ABO",
-              "ASC",
-              "CBO",
-            ],
-          },
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "형식(선택)",
-          field: "metaCreativeFormat",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          cellEditorParams: {
-            values: [
-              "단일 이미지·동영상",
-              "슬라이드",
-            ],
-          },
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "광고 계정명",
-          field: "adAccountName",
-          minWidth: 150, maxWidth: 300
-        },
-
-        {
-          headerName: "캠페인명",
-          field: "campaignName",
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "예산",
-          field: "budget",
-          editable: true, // 편집 기능 유지
-          minWidth: 150, maxWidth: 300,
-          // --- 원화 포맷터 추가 ---
-          valueFormatter: params => {
-            // 값이 null, undefined 또는 숫자가 아니면 빈 문자열 반환
-            if (params.value == null || isNaN(params.value)) {
-              return '';
-            }
-            // Intl.NumberFormat을 사용하여 한국 원화 형식으로 변환
-            try {
-              return new Intl.NumberFormat('ko-KR', {
-                style: 'currency',
-                currency: 'KRW'
-                // 소수점이 필요 없으면 아래 주석 해제
-                // minimumFractionDigits: 0,
-                // maximumFractionDigits: 0
-              }).format(params.value);
-            } catch (e) {
-              console.error("Error formatting currency:", e, "Value:", params.value);
-              return params.value; // 포맷팅 실패 시 원본 값 반환 (또는 다른 처리)
-            }
-          },
-          // --- (선택 사항) 타입 지정 ---
-          // 정렬, 필터링 등을 위해 숫자 타입으로 명시하는 것이 좋습니다.
-          type: 'numericColumn'
-        },
-        {
-          headerName: "시작날짜(선택)",
-          field: "startDate",
-          editable: true,
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "시작 시간",
-          field: "startTime",
-          chartDataType: 'time',
-          editable: true,
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "위치(선택)",
-          field: "location",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          minWidth: 100, maxWidth: 300,
-          cellEditorParams: {
-            values: [
-              "대한민국",
-              "일본",
-            ],
-          },
-        },
-        {
-          headerName: "언어(선택)",
-          field: "language",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          minWidth: 100, maxWidth: 300,
-          cellEditorParams: {
-            values: [
-              "한국어",
-              "일본어",
-            ],
-          },
-        },
-        {
-          headerName: "성별(선택)",
-          field: "gender",
-          editable: true,
-          cellEditor: "agSelectCellEditor",
-          minWidth: 100, maxWidth: 300,
-          cellEditorParams: {
-            values: [
-              "모든 성별",
-              "남",
-              "여",
-            ],
-          },
-        },
-        {
-          headerName: "최소 연령",
-          field: "minAge",
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "최대 연령",
-          field: "maxAge",
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "세트명",
-          field: "setName",
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "광고소재명",
-          field: "adMaterialName",
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "업로드 페이지명",
-          field: "uploadPage",
-          minWidth: 150, maxWidth: 300
-        },
-
-        {
-          headerName: "랜딩페이지 URL",
-          field: "landingUrl",
-          editable: true,
-          minWidth: 150, maxWidth: 300
-        },
-        {
-          headerName: "표시링크 URL",
-          field: "displayUrl",
-          editable: true,
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "기본 문구",
-          field: "defaultText",
-          editable: true,
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "제목",
-          field: "title",
-          editable: true,
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "설명",
-          field: "description",
-          editable: true,
-          minWidth: 100, maxWidth: 300
-        },
-        {
-          headerName: "기타 요청사항",
-          field: "otherRequests",
-          editable: true,
-          minWidth: 100, maxWidth: 300
-        },
-      ],
-
-      rowClassRules: {
-        // apply red to Ford cars
-        "rag-green": (params) => params.data.agSelectCellEditor === "ASC",
-      },
-      /*rowData: getData(), 이거로 불러서 데이터 뿌려주기*/
-      autoSizeStrategy: {
-        type: "fitGridWidth",
-      },
-      onGridReady: (params) => {
-        minRowHeight = params.api.getSizesForCurrentTheme().rowHeight;
-        currentRowHeight = minRowHeight;
-      },
-
-      getRowHeight: (params) => {
-        return currentRowHeight;
-      },
-    };
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-
-      const gridDiv = document.querySelector("#myGrid");
-      // gridApi를 여기서 초기화합니다.
-      gridApi = agGrid.createGrid(gridDiv, gridOptions);
-
-      const Input = document.getElementById('excelInput');
-      const uploadButton = document.getElementById('uploadButton');
-      let selectedFile;
-
-      Input.addEventListener('change', function (event) {
-        selectedFile = event.target.files[0];
-        // (선택 사항) 파일이 선택되면 버튼 활성화 등의 로직 추가 가능
-        if(selectedFile) {
-          console.log("파일 선택됨:", selectedFile.name);
-          // uploadButton.disabled = false; // 예시: 버튼 활성화
-        }
-      });
-
-      // 업로드 버튼 클릭 시 실행될 로직
-      uploadButton.addEventListener('click', function() {
-        // 파일이 선택되었는지 확인
-        if (!selectedFile) {
-          alert('업로드할 엑셀 파일을 먼저 선택해주세요.');
-          return;
-        }
+        console.log("Processed data for sending:", requestJson);
 
         const formData = new FormData();
-        formData.append('file', selectedFile);
 
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
-        let headerValues = {};
-        if (csrfHeader && csrfToken) {
-          headerValues[csrfHeader] = csrfToken;
+        // 파일 추가 로직
+        const currentRow = rows[i + 1]; // 현재 처리 중인 행
+        if (currentRow) {
+          const fileInput = currentRow.querySelector('input[type="file"][name="files"]');
+          let filesAttached = false;
+
+          if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            for (let j = 0; j < fileInput.files.length; j++) {
+              formData.append('files', fileInput.files[j]);
+              filesAttached = true;
+            }
+          }
+
+          const blob = new Blob([requestJson], {type: 'application/json'});
+          formData.append('request', blob, 'request.json');
+
+          if (filesAttached || true) { // 파일이 첨부되었을 때만 전송하거나 항상 전송
+            fetchCall(formData);
+          }
+
+          // 모달 닫기
+          const modalElement = document.getElementById('exampleModal');
+          const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
+          if (bootstrapModal) {
+            bootstrapModal.hide();
+          }
         }
-
-        console.log("파일 업로드 시작...");
-        gridApi.showLoadingOverlay();
-
-          fetchWithSpinner(
-              '/api/meta/upload',
-              {
-                  headers: headerValues,
-                  method: 'POST',
-                  body: formData
-              },
-              "excelSaving",
-              true, // JSON 파싱
-              "엑셀 업로드 성공!", // 성공 메시지
-              "엑셀 업로드 실패" // 실패 메시지
-          )
-              .then(resData => {
-                  console.log("업로드 성공 및 데이터 수신:", resData);
-                  if (gridApi && resData) {
-
-                      gridApi.setGridOption('rowData', resData.data);
-                  } else {
-                      console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
-                  }
-
-                  gridApi.hideOverlay();
-                })
-                .catch(error => {
-                  // 에러 처리
-                  console.error("파일 업로드 또는 처리 중 에러 발생:", error);
-                  alert(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
-                  gridApi.hideOverlay();
-                });
-      });
-    }); // DOMContentLoaded listener 끝
-    class AdRequestDto {
-      constructor(data = {}) {
-        this.index = data.index || null;
-        this.metaCampaignObjective = data.metaCampaignObjective || null;
-        this.metaCampaignType = data.metaCampaignType || null;
-        this.adAccountName = data.adAccountName || null;
-        this.adAccountId = data.adAccountId || null;
-        this.pixelId = data.pixelId || null;
-        this.campaignName = data.campaignName || null;
-        this.campaignId = data.campaignId || null;
-        this.budget = data.budget || null;
-        this.startDate = data.startDate || null;
-        this.startTime = data.startTime || null;
-        this.location = data.location || null;
-        this.language = data.language || null;
-        this.gender = data.gender || null;
-        this.minAge = data.minAge || null;
-        this.maxAge = data.maxAge || null;
-        this.setName = data.setName || null;
-        this.setId = data.setId || null;
-        this.adMaterialName = data.adMaterialName || null;
-        this.uploadPageName = data.uploadPageName || null;
-        this.pageId = data.pageId || null;
-        this.metaCreativeFormat = data.metaCreativeFormat || null;
-        this.landingUrl = data.landingUrl || null;
-        this.displayUrl = data.displayUrl || null;
-        this.defaultText = data.defaultText || null;
-        this.title = data.title || null;
-        this.description = data.description || null;
-        this.otherRequests = data.otherRequests || null;
-        this.blank = data.blank || null;
-        this.adCode = data.adCode || null;
-        this.isShortUrlCreate = data.isShortUrlCreate || null;
-        this.shortUrl = data.shortUrl || null;
-        this.pageResolved = false;
-        this.adAccountResolved = false;
-        this.campaignResolved = false;
-        this.setResolved = false;
-        this.pixelResolved = false;
-      }
-      toJSON() {
-        return JSON.stringify(this);
       }
     }
+
+      function fetchCall(formData) {
+        const headerValues = {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+        };
+        fetchWithSpinner(
+                '/api/meta/publish',
+                {
+                  headers: headerValues,
+                  method: 'POST',
+                  body: formData,
+                },
+                "rowProcessing",
+                false,
+                "광고업로드 성공!",
+                "광고업로드 실패.."
+        )
+                .then(response => {
+                  if (!response.ok) {
+                    return response.text().then(text => {
+                      let errorMessage = `HTTP error! status: ${response.status}`;
+                      try {
+                        // 서버가 JSON 형태의 에러 메시지를 보냈을 경우 파싱 시도
+                        const errorData = JSON.parse(text);
+                        errorMessage += `, message: ${errorData.message || errorData.error || text}`;
+                      } catch (e) {
+                        // JSON 파싱 실패 시 그냥 텍스트 사용
+                        errorMessage += `, message: ${text}`;
+                      }
+                      throw new Error(errorMessage);
+                    });
+                  }
+
+                  return response.json();
+                })
+                .then(data => {
+                  console.log('Upload success:', data);
+                  // 성공 시 처리 로직 (예: 그리드 업데이트, 알림 표시 등)
+                  alert('데이터 및 파일 전송 성공!');
+                  // 필요하다면 성공 후 그리드 초기화 또는 상태 업데이트
+                  // gridApi.setGridOption('rowData', []); // 예시: 성공 후 그리드 비우기
+                })
+                .catch(error => {
+                  console.error('Upload error:', error);
+                  // 에러 시 처리 로직 (예: 사용자에게 에러 알림)
+                  alert(`데이터 및 파일 전송 중 오류 발생: ${error.message}`);
+                });
+      }
+
+      class CustomButtonComponent {
+        eGui;
+        eButton;
+        eventListener;
+
+        init() {
+          this.eGui = document.createElement("div");
+          const eButton = document.createElement("input");
+          eButton.setAttribute("type", "file");
+          eButton.setAttribute("name", "files");
+          eButton.setAttribute("class", "form-control");
+          eButton.setAttribute("multiple", "multiple");
+          eButton.setAttribute("accept", ".jpg, .jpeg, .png, .mp4, .gif");
+          eButton.textContent = "파일 업로드";
+          this.eGui.appendChild(eButton);
+        }
+
+        getGui() {
+          return this.eGui;
+        }
+
+        refresh() {
+          return true;
+        }
+
+        destroy() {
+          if (this.eButton) {
+            this.eButton.removeEventListener("click", this.eventListener);
+          }
+        }
+      }
+
+      const gridOptions = {
+
+        rowData: [],
+
+        columnDefs: [
+          {
+            headerName: "파일 업로드",
+            field: "button",
+            cellRenderer: CustomButtonComponent,
+            minWidth: 280
+          },
+          {
+            headerName: "캠페인 목표(선택)",
+            field: "metaCampaignObjective",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+              values: [
+                "판매",
+                "트래픽"
+              ],
+            },
+            minWidth: 150, maxWidth: 300,
+            valueFormatter: params => {
+              const value = params.value;
+              if (value === 'OUTCOME_SALES') {
+                return '판매';
+              } else if (value === 'OUTCOME_TRAFFIC') {
+                return '트래픽';
+              } else {
+                return value;
+              }
+            },
+            valueSetter: params => {
+              const selectedText = params.newValue;
+              const field = params.colDef.field;
+              const data = params.data;
+
+              if (selectedText === '판매') {
+                data[field] = 'OUTCOME_SALES';
+              } else if (selectedText === '트래픽') {
+                data[field] = 'OUTCOME_TRAFFIC';
+              } else {
+                // 예외 처리: 예상치 못한 값이 선택된 경우
+                data[field] = selectedText;
+              }
+              return true;
+            }
+          },
+          {
+            headerName: "캠페인 형태(선택)",
+            field: "metaCampaignType",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+              values: [
+                "ABO",
+                "ASC",
+                "CBO",
+              ],
+            },
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "형식(선택)",
+            field: "metaCreativeFormat",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+              values: [
+                "단일 이미지·동영상",
+                "슬라이드",
+              ],
+            },
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "광고 계정명",
+            field: "adAccountName",
+            minWidth: 150, maxWidth: 300
+          },
+
+          {
+            headerName: "캠페인명",
+            field: "campaignName",
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "예산",
+            field: "budget",
+            editable: true, // 편집 기능 유지
+            minWidth: 150, maxWidth: 300,
+            // --- 원화 포맷터 추가 ---
+            valueFormatter: params => {
+              // 값이 null, undefined 또는 숫자가 아니면 빈 문자열 반환
+              if (params.value == null || isNaN(params.value)) {
+                return '';
+              }
+              // Intl.NumberFormat을 사용하여 한국 원화 형식으로 변환
+              try {
+                return new Intl.NumberFormat('ko-KR', {
+                  style: 'currency',
+                  currency: 'KRW'
+                  // 소수점이 필요 없으면 아래 주석 해제
+                  // minimumFractionDigits: 0,
+                  // maximumFractionDigits: 0
+                }).format(params.value);
+              } catch (e) {
+                console.error("Error formatting currency:", e, "Value:", params.value);
+                return params.value; // 포맷팅 실패 시 원본 값 반환 (또는 다른 처리)
+              }
+            },
+            // --- (선택 사항) 타입 지정 ---
+            // 정렬, 필터링 등을 위해 숫자 타입으로 명시하는 것이 좋습니다.
+            type: 'numericColumn'
+          },
+          {
+            headerName: "시작날짜(선택)",
+            field: "startDate",
+            editable: true,
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "시작 시간",
+            field: "startTime",
+            chartDataType: 'time',
+            editable: true,
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "위치(선택)",
+            field: "location",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            minWidth: 100, maxWidth: 300,
+            cellEditorParams: {
+              values: [
+                "대한민국",
+                "일본",
+              ],
+            },
+          },
+          {
+            headerName: "언어(선택)",
+            field: "language",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            minWidth: 100, maxWidth: 300,
+            cellEditorParams: {
+              values: [
+                "한국어",
+                "일본어",
+              ],
+            },
+          },
+          {
+            headerName: "성별(선택)",
+            field: "gender",
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            minWidth: 100, maxWidth: 300,
+            cellEditorParams: {
+              values: [
+                "모든 성별",
+                "남",
+                "여",
+              ],
+            },
+          },
+          {
+            headerName: "최소 연령",
+            field: "minAge",
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "최대 연령",
+            field: "maxAge",
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "세트명",
+            field: "setName",
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "광고소재명",
+            field: "adMaterialName",
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "업로드 페이지명",
+            field: "uploadPage",
+            minWidth: 150, maxWidth: 300
+          },
+
+          {
+            headerName: "랜딩페이지 URL",
+            field: "landingUrl",
+            editable: true,
+            minWidth: 150, maxWidth: 300
+          },
+          {
+            headerName: "표시링크 URL",
+            field: "displayUrl",
+            editable: true,
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "기본 문구",
+            field: "defaultText",
+            editable: true,
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "제목",
+            field: "title",
+            editable: true,
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "설명",
+            field: "description",
+            editable: true,
+            minWidth: 100, maxWidth: 300
+          },
+          {
+            headerName: "기타 요청사항",
+            field: "otherRequests",
+            editable: true,
+            minWidth: 100, maxWidth: 300
+          },
+        ],
+
+        rowClassRules: {
+          // apply red to Ford cars
+          "rag-green": (params) => params.data.agSelectCellEditor === "ASC",
+        },
+        /*rowData: getData(), 이거로 불러서 데이터 뿌려주기*/
+        autoSizeStrategy: {
+          type: "fitGridWidth",
+        },
+        onGridReady: (params) => {
+          minRowHeight = params.api.getSizesForCurrentTheme().rowHeight;
+          currentRowHeight = minRowHeight;
+        },
+
+        getRowHeight: (params) => {
+          return currentRowHeight;
+        },
+      };
+
+
+      document.addEventListener("DOMContentLoaded", function () {
+
+        const gridDiv = document.querySelector("#myGrid");
+        // gridApi를 여기서 초기화합니다.
+        gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+        const Input = document.getElementById('excelInput');
+        const uploadButton = document.getElementById('uploadButton');
+        let selectedFile;
+
+        Input.addEventListener('change', function (event) {
+          selectedFile = event.target.files[0];
+          // (선택 사항) 파일이 선택되면 버튼 활성화 등의 로직 추가 가능
+          if (selectedFile) {
+            console.log("파일 선택됨:", selectedFile.name);
+            // uploadButton.disabled = false; // 예시: 버튼 활성화
+          }
+        });
+
+        // 업로드 버튼 클릭 시 실행될 로직
+        uploadButton.addEventListener('click', function () {
+          // 파일이 선택되었는지 확인
+          if (!selectedFile) {
+            alert('업로드할 엑셀 파일을 먼저 선택해주세요.');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+          let headerValues = {};
+          if (csrfHeader && csrfToken) {
+            headerValues[csrfHeader] = csrfToken;
+          }
+
+          console.log("파일 업로드 시작...");
+          gridApi.showLoadingOverlay();
+          document.getElementById('uploadButton').disabled = true;
+          fetchWithSpinner(
+                  '/api/meta/upload',
+                  {
+                    headers: headerValues,
+                    method: 'POST',
+                    body: formData
+                  },
+                  "excelSaving",
+                  true, // JSON 파싱
+                  "엑셀 업로드 성공!", // 성공 메시지
+                  "엑셀 업로드 실패" // 실패 메시지
+          )
+                  .then(resData => {
+                    console.log("업로드 성공 및 데이터 수신:", resData);
+                    if (gridApi && resData) {
+
+
+                      gridApi.setGridOption('rowData', resData.data);
+                    } else {
+                      console.warn("gridApi가 초기화되지 않았거나 받은 데이터가 없습니다.");
+                      document.getElementById('uploadButton').disabled = false;
+                    }
+
+                    gridApi.hideOverlay();
+                  })
+                  .catch(error => {
+                    // 에러 처리
+                    console.error("파일 업로드 또는 처리 중 에러 발생:", error);
+                    alert(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
+                    gridApi.hideOverlay();
+                    document.getElementById('uploadButton').disabled = false;
+                  });
+        });
+      }); // DOMContentLoaded listener 끝
+      class AdRequestDto {
+        constructor(data = {}) {
+          this.index = data.index || null;
+          this.metaCampaignObjective = data.metaCampaignObjective || null;
+          this.metaCampaignType = data.metaCampaignType || null;
+          this.adAccountName = data.adAccountName || null;
+          this.adAccountId = data.adAccountId || null;
+          this.pixelId = data.pixelId || null;
+          this.campaignName = data.campaignName || null;
+          this.campaignId = data.campaignId || null;
+          this.budget = data.budget || null;
+          this.startDate = data.startDate || null;
+          this.startTime = data.startTime || null;
+          this.location = data.location || null;
+          this.language = data.language || null;
+          this.gender = data.gender || null;
+          this.minAge = data.minAge || null;
+          this.maxAge = data.maxAge || null;
+          this.setName = data.setName || null;
+          this.setId = data.setId || null;
+          this.adMaterialName = data.adMaterialName || null;
+          this.uploadPageName = data.uploadPageName || null;
+          this.pageId = data.pageId || null;
+          this.metaCreativeFormat = data.metaCreativeFormat || null;
+          this.landingUrl = data.landingUrl || null;
+          this.displayUrl = data.displayUrl || null;
+          this.defaultText = data.defaultText || null;
+          this.title = data.title || null;
+          this.description = data.description || null;
+          this.otherRequests = data.otherRequests || null;
+          this.blank = data.blank || null;
+          this.adCode = data.adCode || null;
+          this.isShortUrlCreate = data.isShortUrlCreate || null;
+          this.shortUrl = data.shortUrl || null;
+          this.pageResolved = false;
+          this.adAccountResolved = false;
+          this.campaignResolved = false;
+          this.setResolved = false;
+          this.pixelResolved = false;
+        }
+      }
+
 
   </script>
   <th:block layout:fragment="script">

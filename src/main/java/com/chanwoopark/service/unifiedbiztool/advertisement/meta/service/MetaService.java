@@ -256,7 +256,10 @@ public class MetaService {
         };
     }
 
-    private List<Pixel> getPixels(String accountId, String accessToken) {
+    private List<Pixel> getPixels(
+            String accountId,
+            String accessToken
+    ) {
         String pixelUrl = META_URL
                 + "/v22.0/"
                 + Objects.requireNonNull(accountId)
@@ -272,6 +275,30 @@ public class MetaService {
                 accessToken,
                 Pixel.class
         );
+    }
+
+    private List<Pixel> getPixels(
+            String accountId,
+            String accessToken,
+            String nameToFind
+    ) {
+        String pixelUrl = META_URL
+                + "/v22.0/"
+                + Objects.requireNonNull(accountId)
+                + "/adspixels";
+
+        String pixelQueryParameters = "&fields=id,name,creation_time"
+                + "&limit=1000";
+
+
+
+        return getResource(
+                accountId,
+                pixelUrl,
+                pixelQueryParameters,
+                accessToken,
+                Pixel.class
+        ).stream().filter(getNameFilter(Pixel::getId, nameToFind)).toList();
     }
 
     private List<Campaign> getCampaigns(ExcelRowDto excelRowDto, String accountId, String accessToken) {
@@ -490,23 +517,21 @@ public class MetaService {
         }
     }
 
-    public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files, List<MultipartFile> thumbnails) throws JsonProcessingException {
+    public AdResponse publishAd(AdRequest adRequest, List<MultipartFile> files) throws JsonProcessingException {
         if (!adRequest.isAdAccountResolved() || !adRequest.isCampaignResolved() || !adRequest.isSetResolved() || !adRequest.isPageResolved() || !adRequest.isPixelResolved()) {
             retryResolveMetaEntities(adRequest);
         }
 
         String accessToken = platformTokenService.getToken(Platform.META);
         List<CompletableFuture<UploadResult>> futureResults = new ArrayList<>();
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
+        for (MultipartFile file : files) {
             String contentType = file.getContentType();
             if (contentType == null) continue;
 
             if (contentType.startsWith("image/")) {
                 futureResults.add(metaUploadService.uploadImage(adRequest.getAdAccountId(), file, accessToken));
             } else if (contentType.startsWith("video/")) {
-                MultipartFile thumbnail = (thumbnails != null && thumbnails.size() > i) ? thumbnails.get(i) : null;
-                futureResults.add(metaUploadService.uploadVideo(adRequest.getAdAccountId(), file, accessToken, thumbnail));
+                futureResults.add(metaUploadService.uploadVideo(adRequest.getAdAccountId(), file, accessToken));
             }
         }
         List<UploadResult> uploadResults = futureResults.stream()
@@ -609,7 +634,7 @@ public class MetaService {
     private String handleSingle(List<UploadResult> uploadResults, AdRequest adRequest, String accessToken) {
         UploadResult uploadResult = uploadResults.get(0);
         String url = META_URL
-                + "v22.0/"
+                + "/v22.0/"
                 + adRequest.getAdAccountId()
                     + "/adcreatives";
 
@@ -625,7 +650,9 @@ public class MetaService {
                                 "page_id", adRequest.getPageId(),
                                 "video_data", Map.of(
                                         "video_id", video.getVideoId(),
-                                        "image_url", imageUploadResult.getUrl(),
+                                        "image_url", imageUploadResult.getUrl()
+                                ),
+                                "link_data", Map.of(
                                         "link", adRequest.getLandingUrl()
                                 )
                         )));
@@ -716,7 +743,8 @@ public class MetaService {
         if (!adRequest.isPixelResolved()) {
             List<Pixel> pixelList = getPixels(
                     adRequest.getAdAccountId(),
-                    accessToken
+                    accessToken,
+                    adRequest.getPixelId()
             );
             if (pixelList.size() != 1) {
                 throw new RetryFailedException(RetryFailedException.EntityType.PIXEL, pixelList.size());

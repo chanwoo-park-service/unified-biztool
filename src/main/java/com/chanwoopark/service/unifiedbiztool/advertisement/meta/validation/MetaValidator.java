@@ -28,7 +28,7 @@ public class MetaValidator {
             "video/quicktime"
     );
 
-    public void validateCreativeFormat(AdRequest request, List<MultipartFile> files, List<MultipartFile> thumbnails) {
+    public void validateCreativeFormat(AdRequest request, List<MultipartFile> files) {
         MetaCreativeFormat format = request.getMetaCreativeFormat();
         if (format == null) {
             throw new IllegalArgumentException(
@@ -51,19 +51,6 @@ public class MetaValidator {
                     );
                 }
                 validateFileType(files.get(0));
-
-
-                if (isVideo(files.get(0).getContentType())) {
-                    if (thumbnails == null || thumbnails.isEmpty() || !isImage(thumbnails.get(0).getContentType())) {
-                        throw new IllegalArgumentException(
-                                messageSource.getMessage(
-                                        "creative.file.thumbnails.required",
-                                        new Object[]{1, thumbnails == null ? 0 : thumbnails.size()},
-                                        LocaleContextHolder.getLocale())
-                        );
-                    }
-                }
-
             }
             case SLIDESHOW -> {
 
@@ -116,9 +103,4 @@ public class MetaValidator {
     private boolean isImage(String contentType) {
         return contentType != null && contentType.startsWith("image/");
     }
-
-    private boolean isVideo(String contentType) {
-        return contentType != null && contentType.startsWith("video/");
-    }
-
 }
