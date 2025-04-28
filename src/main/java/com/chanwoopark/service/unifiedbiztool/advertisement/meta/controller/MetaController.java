@@ -53,18 +53,16 @@ public class MetaController {
     @PostMapping("/publish")
     public ResponseEntity<Response<AdResponse>> publishAd(
             @RequestPart("request") @Valid AdRequest adRequest,
-            @RequestPart(name = "files", required = false) List<MultipartFile> files,
-            @RequestPart(name = "thumbnails", required = false) List<MultipartFile> thumbnails
+            @RequestPart(name = "files", required = false) List<MultipartFile> files
     ) throws JsonProcessingException {
         metaValidator.validateCreativeFormat(
                 adRequest,
-                files,
-                thumbnails
+                files
         );
         return ResponseEntity.ok(
                 Response.of(
                         HttpStatus.OK,
-                        metaService.publishAd(adRequest, files, thumbnails)
+                        metaService.publishAd(adRequest, files)
                 )
         );
     }
