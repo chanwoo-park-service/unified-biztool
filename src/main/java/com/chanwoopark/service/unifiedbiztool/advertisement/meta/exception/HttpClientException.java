@@ -12,4 +12,10 @@ public class HttpClientException extends RuntimeException {
         this.statusCode = statusCode;
         this.responseBody = responseBody;
     }
+
+    public HttpClientException(String responseBody) {
+        super(responseBody);
+        this.statusCode = 400;
+        this.responseBody = responseBody;
+    }
 }

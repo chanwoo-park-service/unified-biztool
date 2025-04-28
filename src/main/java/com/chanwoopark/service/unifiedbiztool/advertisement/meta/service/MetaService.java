@@ -169,9 +169,7 @@ public class MetaService {
             );
         } catch (Exception ex) {
             excelRowDto.setErrorMessage(
-                    "진행중 오류가 발생했습니다. 예외명 : "
-                            + ex.getClass().getSimpleName()
-                            + ", 메세지 : " + ex.getMessage()
+                    ex.getMessage()
             );
             return ExcelResponse.of(excelRowDto);
         }
@@ -182,9 +180,7 @@ public class MetaService {
             campaignList = getCampaigns(excelRowDto, accountId, accessToken);
         } catch (Exception ex) {
             excelRowDto.setErrorMessage(
-                    ("진행중 오류가 발생했습니다. 예외명 : "
-                            + ex.getClass().getSimpleName()
-                            + ", 메세지 : " + ex.getMessage())
+                    ex.getMessage()
             );
             return ExcelResponse.of(excelRowDto);
         }
@@ -196,9 +192,7 @@ public class MetaService {
             setList = getSets(excelRowDto, accountId, accessToken);
         } catch (Exception ex) {
             excelRowDto.setErrorMessage(
-                    "진행중 오류가 발생했습니다. 예외명 : "
-                            + ex.getClass().getSimpleName()
-                            + ", 메세지 : " + ex.getMessage()
+                    ex.getMessage()
             );
             return ExcelResponse.of(excelRowDto);
         }
@@ -223,9 +217,7 @@ public class MetaService {
             );
         } catch (Exception ex) {
             excelRowDto.setErrorMessage(
-                    "진행중 오류가 발생했습니다. 예외명 : "
-                            + ex.getClass().getSimpleName()
-                            + ", 메세지 : " + ex.getMessage()
+                    ex.getMessage()
             );
             return ExcelResponse.of(excelRowDto);
         }
@@ -590,7 +582,7 @@ public class MetaService {
                 form -> {
                     try {
                         form
-                                .with("name", adRequest.getTitle())
+                                .with("name", adRequest.getAdMaterialName())
                                 .with("adset_id", adRequest.getSetId())
                                 .with("creative", objectMapper.writeValueAsString(Map.of(
                                         "creative_id", creativeId

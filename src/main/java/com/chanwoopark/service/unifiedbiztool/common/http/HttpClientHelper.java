@@ -32,7 +32,7 @@ public class HttpClientHelper {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
                                     log.warn("GET 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
-                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "GET : " + errorBody));
+                                    return Mono.error(new HttpClientException(errorBody));
                                 })
                 )
                 .bodyToMono(String.class)
@@ -53,7 +53,7 @@ public class HttpClientHelper {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
                                     log.warn("POST 실패 - 상태: {}, 본문: {}", clientResponse.statusCode(), errorBody);
-                                    return Mono.error(new HttpClientException(clientResponse.statusCode().value(), "POST : " + errorBody));
+                                    return Mono.error(new HttpClientException(errorBody));
                                 })
                 )
                 .bodyToMono(String.class)
