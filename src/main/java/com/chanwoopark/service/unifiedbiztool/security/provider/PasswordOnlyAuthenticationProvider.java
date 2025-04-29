@@ -26,9 +26,12 @@ public class PasswordOnlyAuthenticationProvider implements AuthenticationProvide
             List<GrantedAuthority> authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("사원")
             );
+            log.info("로그인 성공");
             return new UsernamePasswordAuthenticationToken(
                     "익명", password, authorities);
         }
+
+        log.error("로그인 실패 : {}", password);
 
         throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
     }
