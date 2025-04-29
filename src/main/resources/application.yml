@@ -29,3 +29,11 @@ app:
     encrypt:
       password: ${AES_PASSWORD}
       salt: ${AES_SALT}
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint}
+      %highlight(%-5level)
+      %clr([%thread]){cyan}
+      %clr(%logger{36}){yellow}
+      %clr(:){faint}
+      %clr(%msg%n){green}"
