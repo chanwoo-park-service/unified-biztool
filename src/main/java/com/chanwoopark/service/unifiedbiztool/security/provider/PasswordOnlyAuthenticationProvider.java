@@ -1,5 +1,6 @@
 package com.chanwoopark.service.unifiedbiztool.security.provider;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Component
 public class PasswordOnlyAuthenticationProvider implements AuthenticationProvider {
 
@@ -24,7 +26,6 @@ public class PasswordOnlyAuthenticationProvider implements AuthenticationProvide
             List<GrantedAuthority> authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("사원")
             );
-
             return new UsernamePasswordAuthenticationToken(
                     "익명", password, authorities);
         }
