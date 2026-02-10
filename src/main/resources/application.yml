@@ -25,6 +25,8 @@ spring:
     suffix: .html
     enabled: true
 app:
+  auth:
+    password: ${APP_PASSWORD}
   token:
     encrypt:
       password: ${AES_PASSWORD}

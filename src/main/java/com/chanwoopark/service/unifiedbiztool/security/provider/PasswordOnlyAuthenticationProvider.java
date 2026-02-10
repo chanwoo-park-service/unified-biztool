@@ -1,6 +1,7 @@
 package com.chanwoopark.service.unifiedbiztool.security.provider;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,11 +18,13 @@ import java.util.List;
 @Component
 public class PasswordOnlyAuthenticationProvider implements AuthenticationProvider {
 
+    @Value("${app.auth.password}")
+    private String correctPassword;
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String password = authentication.getCredentials().toString();
 
-        String correctPassword = "ehdydgkwlak!2";
         if (correctPassword.equals(password)) {
             List<GrantedAuthority> authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("사원")
@@ -30,8 +33,6 @@ public class PasswordOnlyAuthenticationProvider implements AuthenticationProvide
             return new UsernamePasswordAuthenticationToken(
                     "익명", password, authorities);
         }
-
-        log.error("로그인 실패 : {}", password);
 
         throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
     }
